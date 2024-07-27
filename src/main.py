@@ -19,9 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/home/vish.dharmapala.vega/LLM-backend/src/google_env.json"
-
 app.include_router(client_user_router.router, tags=["Client Users"])
 app.include_router(main_board_router.router, tags=["Main Boards"])
 app.include_router(board_router.router, prefix="/main-boards", tags=["Boards"])

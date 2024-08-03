@@ -6,12 +6,15 @@ import io
 from typing import Any, List, Optional
 from sqlalchemy import text
 from google.cloud import storage
+#from google.cloud import pubsub_v1
 from app.repositories.base_repository import BaseRepository
 from app.models.data_management_table import DataManagementTable, TableStatus
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
+
+GCP__BUCKET = "dm_03082024"
 
 class DataManagementTableRepository(BaseRepository):
     def __init__(self):
@@ -107,11 +110,52 @@ class TableStatusRepository(BaseRepository):
             );
         """)
         self.create_table(create_table_query)
+        #self.pubsub_publisher = pubsub_v1.PublisherClient()
+        #self.pubsub_topic_path = self.pubsub_publisher.topic_path('reliable-vector-429905-e8', 'your-topic-id')
+
+
+    def upload_file_table_status_for_rag(self, file_content: bytes, table_status: 'TableStatus') -> 'TableStatus':
+        # Upload file to Google Cloud Storage
+        bucket_name = GCP__BUCKET
+        current_month_date = datetime.now().strftime("%Y-%m")
+        destination_blob_name = f'{current_month_date}/{table_status.filename}'
+        
+        # Initialize a storage client
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(destination_blob_name)
+
+        # Upload the file
+        blob.upload_from_string(file_content)
+
+        # Set the file download link
+        table_status.file_download_link = f'gs://{bucket_name}/{destination_blob_name}'
+
+        # Insert into the database
+        query = text("""
+            INSERT INTO TableStatus (data_management_table_id, month_year, approved,
+                                     filename, file_download_link, created_at, updated_at)
+            VALUES (:data_management_table_id, :month_year, :approved,
+                    :filename, :file_download_link, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING *;
+        """)
+
+        values = {
+            "data_management_table_id": table_status.data_management_table_id,
+            "month_year": table_status.month_year,
+            "approved": table_status.approved,
+            "filename": table_status.filename,
+            "file_download_link": table_status.file_download_link
+        }
+
+        table_status_data_tuple = self.execute_query(query, values)
+        table_status_instance = TableStatus(**dict(zip(TableStatus.__annotations__, table_status_data_tuple)))
+        return table_status_instance
 
     def upload_file_table_status(self, upload_df, table_status: TableStatus) -> TableStatus:
 
         # Upload DataFrame to Google Bucket
-        bucket_name = 'datamanagementtable'
+        bucket_name = GCP__BUCKET
         current_month_date = datetime.now().strftime("%Y-%m")
         table_status.file_download_link = f'gs://{bucket_name}/{current_month_date}/{table_status.filename}'
         upload_df.to_csv(table_status.file_download_link, index=False, header=True)
@@ -209,7 +253,7 @@ class TableStatusRepository(BaseRepository):
                 raise HTTPException(status_code=404, detail=f"No file found for data management table {data_management_table_id} and month {month_year}.")
 
             # Download the file from Google Bucket
-            bucket_name = 'datamanagementtable'
+            bucket_name = GCP__BUCKET
             blob_name = file_record.filename
 
             storage_client = storage.Client()

@@ -132,6 +132,38 @@ async def update_approval_status(table_id: int, new_approval_status: bool):
     repository = TableStatusRepository()
     return repository.update_approval_status(table_id, new_approval_status)
 
+@router.post("/status/upload_rag/{data_management_table_id}", response_model=TableStatus)
+async def upload_file_to_table_status_for_rag(
+    data_management_table_id: int, 
+    month_year: str = Form(...),  # Accept month_year as a form field
+    file: UploadFile = File(...)):
+    status_repository = TableStatusRepository()
+
+    # Read and process the uploaded file
+    contents = await file.read()
+    buffer = BytesIO(contents)
+    # Process the file based on its type if needed
+    # For simplicity, let's assume we handle only basic storage here
+    # You can add more processing logic based on the file type
+    processed_file_data = buffer.getvalue()
+    
+    # Assuming you want to handle file uploads for a specific table status
+    # You can create a new TableStatus instance and save it to the database
+    new_table_status = TableStatus(
+        data_management_table_id=data_management_table_id,
+        month_year=month_year,
+        approved=False,
+        filename=file.filename,
+        file_download_link="",
+        created_at=None,  # These fields will be updated by the database
+        updated_at=None
+        )
+
+    # Save the changes to the database
+    updated_table_status = status_repository.upload_file_table_status_for_rag(processed_file_data, new_table_status)
+    return updated_table_status
+
+
 @router.post("/status/upload/{data_management_table_id}", response_model=TableStatus)
 async def upload_file_to_table_status(
     data_management_table_id: int, 
@@ -187,6 +219,7 @@ async def upload_file_to_table_status(
     )
     created_documentation = ai_documentation_repository.update_ai_documentation_for_board(board_id, ai_documentation)
     #created_documentation = ai_documentation_repository.create_ai_documentation(ai_documentation)
+    #We need to add option to submit the files in pub sub with all the details
 
     return updated_table_status
 

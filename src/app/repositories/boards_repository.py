@@ -35,6 +35,8 @@ class BoardsRepository(BaseRepository):
 
         board_data_tuple = self.execute_query(query, values)
         board_instance = Boards(**dict(zip(Boards.__annotations__, board_data_tuple)))
+        
+        #To do: When we create RAG Board , we need to create collection also
         return board_instance
 
     def get_boards(self) -> Any:

@@ -102,7 +102,7 @@ def login(user_data: ClientUser):
 
 @router.post("/send-otp", response_model=dict)
 async def send_otp_to_user(form_data: PhoneRequestForm):
-    user = users_repository. (form_data.phone_number)
+    user = users_repository.get_user_by_phone(form_data.phone_number)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
 

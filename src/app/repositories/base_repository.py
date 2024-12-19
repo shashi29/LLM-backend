@@ -41,6 +41,15 @@ class BaseRepository:
             connection.dispose()
         return result
     
+    def execute_query_no_return(self, query: sql.SQL, values: Optional[tuple] = None) -> Any:
+        connection = get_database_connection()
+        try:
+            with connection.connect() as cursor:
+                out = cursor.execute(query, values)
+                cursor.commit()
+        finally:
+            connection.dispose()
+    
     def execute_query_all(self, query: sql.SQL, values: Optional[tuple] = None) -> Any:
         connection = get_database_connection()
         try:

@@ -6,6 +6,9 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import text
 from app.repositories.base_repository import BaseRepository
 from app.models.client_user import ClientUser
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 SECRET_KEY = "test_token"
 ALGORITHM = "HS256"
@@ -30,11 +33,6 @@ def send_sms(phone_number, otp):
         print("Failed to send SMS.")
         print(f"Status Code: {response.status_code}")
         print(f"Response: {response.text}")
-        
-        
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 def send_email(email, otp):
     # Gmail SMTP configuration

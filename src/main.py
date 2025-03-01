@@ -26,7 +26,6 @@ app.include_router(prompt_router.router, prefix="/main-boards/boards", tags=["Pr
 app.include_router(data_management_table_router.router, prefix="/main-boards/boards", tags=["Data Management Tables"])
 app.include_router(ai_documentation_router.router, prefix="/main-boards/boards", tags=["AI Documentation"])
 app.include_router(main_board_access_router.router, prefix="/main-boards/boards", tags=["Main Board Access"])
-# app.include_router(main_board_router.router, prefix="/main-boards", tags=["Main Boards"]) #Gaurav
 
 # app.include_router(time_line_settings_router.router, prefix="/main-boards/boards", tags=["Time Line Settings"])
 #app.include_router(enhanced_data_management_table_router.router, prefix="/main-boards/boards", tags=["Enhanced Data Management Tables"])

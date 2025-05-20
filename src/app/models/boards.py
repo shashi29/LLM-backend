@@ -41,6 +41,13 @@ class Boards(SQLModel, table=True):
         sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
 
+    # Add the following to your existing Boards class:
+
+    chat_collections: List["ChatCollection"] = Relationship(
+        back_populates="board",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+
     #Gaurav Changes
     class Config:
         json_schema_extra = {

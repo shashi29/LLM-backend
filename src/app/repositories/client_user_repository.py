@@ -48,7 +48,8 @@ class ClientUsersRepository(BaseRepository):
                 customer_other_details TEXT,
                 created_at TIMESTAMP,
                 updated_at TIMESTAMP,
-                phone_number VARCHAR(255)  -- Added phone_number field
+                phone_number VARCHAR(255),
+                trial_end_date TIMESTAMP
             );
         """)
         self.create_table(create_table_query)
@@ -64,15 +65,19 @@ class ClientUsersRepository(BaseRepository):
         
 
     def create_user(self, user: ClientUser) -> Any:
+        # Calculate trial end date (14 days from now)
+        trial_end_date = datetime.utcnow() + timedelta(days=14)
+        
         query = text("""
             INSERT INTO ClientUsers (name, username, password, email, client_number,
                                      customer_number, subscription, role, customer_other_details,
-                                     created_at, updated_at, phone_number)
+                                     created_at, updated_at, phone_number, trial_end_date)
             VALUES (:name, :username, :password, :email, :client_number, :customer_number,
                     :subscription, :role, :customer_other_details, CURRENT_TIMESTAMP,
-                    CURRENT_TIMESTAMP, :phone_number)
+                    CURRENT_TIMESTAMP, :phone_number, :trial_end_date)
             RETURNING id, name, username, password, email, client_number, customer_number,
-                      subscription, role, customer_other_details, created_at, updated_at, phone_number;
+                      subscription, role, customer_other_details, created_at, updated_at, 
+                      phone_number, trial_end_date;
         """)
 
         values = {
@@ -85,7 +90,8 @@ class ClientUsersRepository(BaseRepository):
             "subscription": user.subscription,
             "role": user.role,
             "customer_other_details": user.customer_other_details,
-            "phone_number": user.phone_number  # Added phone_number value
+            "phone_number": user.phone_number,
+            "trial_end_date": trial_end_date
         }
 
         user_data_tuple = self.execute_query(query, values)
@@ -119,10 +125,12 @@ class ClientUsersRepository(BaseRepository):
                 email = :email, client_number = :client_number,
                 customer_number = :customer_number, subscription = :subscription,
                 role = :role, customer_other_details = :customer_other_details,
-                updated_at = CURRENT_TIMESTAMP, phone_number = :phone_number
+                updated_at = CURRENT_TIMESTAMP, phone_number = :phone_number,
+                trial_end_date = :trial_end_date
             WHERE id = :user_id
             RETURNING id, name, username, password, email, client_number, customer_number,
-                      subscription, role, customer_other_details, created_at, updated_at, phone_number;
+                      subscription, role, customer_other_details, created_at, updated_at, 
+                      phone_number, trial_end_date;
         """)
 
         values = {
@@ -135,7 +143,8 @@ class ClientUsersRepository(BaseRepository):
             "subscription": user.subscription,
             "role": user.role,
             "customer_other_details": user.customer_other_details,
-            "phone_number": user.phone_number,  # Added phone_number value
+            "phone_number": user.phone_number,
+            "trial_end_date": user.trial_end_date,
             "user_id": user_id
         }
 
@@ -147,7 +156,8 @@ class ClientUsersRepository(BaseRepository):
         query = text("""
             DELETE FROM ClientUsers WHERE id = :user_id
             RETURNING id, name, username, password, email, client_number, customer_number,
-                      subscription, role, customer_other_details, created_at, updated_at, phone_number;
+                      subscription, role, customer_other_details, created_at, updated_at, 
+                      phone_number, trial_end_date;
         """)
 
         values = {"user_id": user_id}
@@ -198,3 +208,27 @@ class ClientUsersRepository(BaseRepository):
             user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
             return user_instance
         return None
+    
+    def is_trial_active(self, user_id: int) -> bool:
+        """Check if a user's trial is still active."""
+        query = text("""
+            SELECT trial_end_date FROM ClientUsers 
+            WHERE id = :user_id AND (subscription IS NULL OR subscription = 'Trial');
+        """)
+        
+        values = {"user_id": user_id}
+        result = self.execute_query(query, values)
+        
+        if result and result[0]:
+            trial_end_date = result[0]
+            # If trial_end_date is after the current time, trial is still active
+            return trial_end_date > datetime.utcnow()
+        
+        # If no trial_end_date or if subscription is set (not trial), return True
+        # This assumes any user with a set subscription has full access
+        query = text("""
+            SELECT subscription FROM ClientUsers 
+            WHERE id = :user_id AND subscription IS NOT NULL AND subscription != 'Trial';
+        """)
+        result = self.execute_query(query, values)
+        return bool(result)

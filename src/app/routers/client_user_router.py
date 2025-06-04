@@ -1,8 +1,8 @@
-
+# app/routers/client_user_router.py
 import random
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
-from datetime import timedelta
+from datetime import timedelta, datetime
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from app.models.client_user import ClientUser, PhoneRequestForm, OTPVerificationForm
@@ -20,6 +20,9 @@ users_repository = ClientUsersRepository()
 @router.post("/", response_model=ClientUser)
 async def create_user(user: ClientUser):
     try:
+        # Set trial end date (14 days from now)
+        user.trial_end_date = datetime.utcnow() + timedelta(days=14)
+        
         created_user = users_repository.create_user(user)
         return created_user
     except EmailAlreadyInUseException:
@@ -79,18 +82,27 @@ def login(user_data: ClientUser):
         expires_delta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(data={"sub": user_data.email}, expires_delta=expires_delta)
 
+        # Check if trial is active
+        is_trial_active = True
+        if user.subscription == "Trial" and user.trial_end_date:
+            is_trial_active = user.trial_end_date > datetime.utcnow()
+        
+        # Format trial end date for response
+        trial_end_date_str = None
+        if user.trial_end_date:
+            trial_end_date_str = user.trial_end_date.isoformat()
+
         response_data = {
             "access_token": access_token,
             "token_type": "bearer",
             "user_id": user.id,
             "user_name": user.name,
-#            "name":user.name,
             "email": user.email,
             "role": user.role,
             "subscription": user.subscription,
             "customer_other_details": user.customer_other_details,
-            
-            # Add other user details as needed
+            "trial_end_date": trial_end_date_str,
+            "is_trial_active": is_trial_active
         }
 
         return JSONResponse(content=response_data)
@@ -128,6 +140,16 @@ async def verify_otp(form_data: OTPVerificationForm):
             data={"sub": form_data.phone_number}, expires_delta=access_token_expires
         )
         
+        # Check if trial is active
+        is_trial_active = True
+        if user.subscription == "Trial" and user.trial_end_date:
+            is_trial_active = user.trial_end_date > datetime.utcnow()
+        
+        # Format trial end date for response
+        trial_end_date_str = None
+        if user.trial_end_date:
+            trial_end_date_str = user.trial_end_date.isoformat()
+        
         response_data = {
             "access_token": access_token,
             "token_type": "bearer",
@@ -137,7 +159,8 @@ async def verify_otp(form_data: OTPVerificationForm):
             "role": user.role,
             "subscription": user.subscription,
             "customer_other_details": user.customer_other_details,
-            # Add other user details as needed
+            "trial_end_date": trial_end_date_str,
+            "is_trial_active": is_trial_active
         }
         
         return JSONResponse(content=response_data)

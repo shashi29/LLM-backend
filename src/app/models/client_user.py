@@ -24,6 +24,7 @@ class ClientUser(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     phone_number: Optional[str] = None
+    trial_end_date: Optional[datetime] = None  # Added field for trial end date
 
     class Config:
         orm_mode = True

@@ -1,0 +1,590 @@
+# app/repositories/rag_repository.py
+from typing import Any, List, Optional, Dict
+from datetime import datetime
+import os, uuid, json, tempfile
+from sqlalchemy import text
+from app.repositories.base_repository import BaseRepository
+from app.models.rag_models import RAGCollection, ChatMessage, FileInfo, ChatSession, ChatStats
+
+# Import necessary clients
+from qdrant_client import QdrantClient
+from qdrant_client.models import VectorParams, Distance, OptimizersConfigDiff
+from sentence_transformers import SentenceTransformer
+from google.cloud import storage
+
+# Google Cloud Storage Client wrapper
+class GoogleStorageClient:
+    def __init__(self, project_id=None, bucket_name='documents'):
+        self.storage_client = storage.Client(project=project_id)
+        self.default_bucket_name = bucket_name
+        
+        # Ensure the bucket exists
+        self._ensure_bucket_exists(bucket_name)
+    
+    def _ensure_bucket_exists(self, bucket_name):
+        """Create bucket if it doesn't exist"""
+        try:
+            if not self.storage_client.lookup_bucket(bucket_name):
+                bucket = self.storage_client.create_bucket(bucket_name)
+                print(f"Bucket {bucket_name} created")
+            return True
+        except Exception as e:
+            print(f"Error creating bucket: {str(e)}")
+            return False
+        
+    def upload_file(self, object_name, file_path, bucket_name=None):
+        """Upload a file to GCS"""
+        bucket_name = bucket_name or self.default_bucket_name
+        bucket = self.storage_client.bucket(bucket_name)
+        blob = bucket.blob(object_name)
+        
+        blob.upload_from_filename(file_path)
+        return f"gs://{bucket_name}/{object_name}"
+    
+    def list_objects(self, prefix=None, bucket_name=None):
+        """List objects in a bucket with optional prefix"""
+        bucket_name = bucket_name or self.default_bucket_name
+        bucket = self.storage_client.bucket(bucket_name)
+        
+        blobs = bucket.list_blobs(prefix=prefix)
+        return [
+            {
+                'name': blob.name,
+                'size': blob.size,
+                'updated': blob.updated,
+                'storage_path': f"gs://{bucket_name}/{blob.name}"
+            } for blob in blobs
+        ]
+    
+    def download_file(self, object_name, destination_file_name, bucket_name=None):
+        """Download a file from GCS"""
+        bucket_name = bucket_name or self.default_bucket_name
+        bucket = self.storage_client.bucket(bucket_name)
+        blob = bucket.blob(object_name)
+        
+        blob.download_to_filename(destination_file_name)
+        return destination_file_name
+    
+    def download_as_bytes(self, object_name, bucket_name=None):
+        """Download a file from GCS as bytes"""
+        bucket_name = bucket_name or self.default_bucket_name
+        bucket = self.storage_client.bucket(bucket_name)
+        blob = bucket.blob(object_name)
+        
+        return blob.download_as_bytes()
+    
+    def remove_object(self, object_name, bucket_name=None):
+        """Delete an object from GCS"""
+        bucket_name = bucket_name or self.default_bucket_name
+        bucket = self.storage_client.bucket(bucket_name)
+        blob = bucket.blob(object_name)
+        
+        blob.delete()
+
+# RabbitMQ Client wrapper
+class RabbitMQClient:
+    def __init__(self, host, queue, user, password):
+        import pika
+        credentials = pika.PlainCredentials(user, password)
+        self.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host=host, credentials=credentials)
+        )
+        self.channel = self.connection.channel()
+        self.queue = queue
+        self.channel.queue_declare(queue=queue, durable=True)
+        
+    def send_message(self, message, priority=0):
+        import pika
+        self.channel.basic_publish(
+            exchange='',
+            routing_key=self.queue,
+            body=json.dumps(message),
+            properties=pika.BasicProperties(
+                delivery_mode=2,  # make message persistent
+                priority=priority
+            )
+        )
+        
+    def close(self):
+        if self.connection.is_open:
+            self.connection.close()
+
+class RAGRepository(BaseRepository):
+    def __init__(self):
+        super().__init__('RAGCollection')
+        # Initialize required clients
+        self.qdrant_client = QdrantClient(url=os.getenv("QDRANT_URL", "http://localhost:6333"))
+        self.embeddings = SentenceTransformer("all-MiniLM-L6-v2")
+        
+        # Initialize Google Cloud Storage client
+        self.storage_client = GoogleStorageClient(
+            project_id=os.getenv("GCP_PROJECT_ID"),
+            bucket_name=os.getenv("GCS_BUCKET_NAME", "documents")
+        )
+        
+        # Create the table if it doesn't exist
+        create_table_query = text("""
+            CREATE TABLE IF NOT EXISTS RAGCollection (
+                id SERIAL PRIMARY KEY,
+                board_id INT REFERENCES Boards(id) ON DELETE CASCADE,
+                collection_name VARCHAR(255) UNIQUE NOT NULL,
+                vector_size INT DEFAULT 384,
+                distance VARCHAR(50) DEFAULT 'COSINE',
+                created_at TIMESTAMP,
+                updated_at TIMESTAMP
+            );
+        """)
+        self.create_table(create_table_query)
+        
+        # Create ChatMessage table
+        create_chat_table_query = text("""
+            CREATE TABLE IF NOT EXISTS ChatMessage (
+                id SERIAL PRIMARY KEY,
+                collection_id INT REFERENCES RAGCollection(id) ON DELETE CASCADE,
+                session_id VARCHAR(255) NOT NULL,
+                sender VARCHAR(50) NOT NULL,
+                message TEXT NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        self.create_table(create_chat_table_query)
+
+    def create_collection(self, collection: RAGCollection) -> RAGCollection:
+        """Create a new RAG collection in Qdrant and database"""
+        # Check if collection exists in Qdrant
+        collections = self.qdrant_client.get_collections()
+        if any(col.name == collection.collection_name for col in collections.collections):
+            raise ValueError(f"Collection '{collection.collection_name}' already exists in Qdrant")
+            
+        # Create collection in Qdrant
+        self.qdrant_client.create_collection(
+            collection_name=collection.collection_name,
+            vectors_config=VectorParams(
+                size=collection.vector_size,
+                distance=Distance[collection.distance],
+                on_disk=True
+            ),
+            optimizers_config=OptimizersConfigDiff(indexing_threshold=20000)
+        )
+        
+        # Create collection in database
+        query = text("""
+            INSERT INTO RAGCollection 
+            (board_id, collection_name, vector_size, distance, created_at, updated_at)
+            VALUES 
+            (:board_id, :collection_name, :vector_size, :distance, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id, board_id, collection_name, vector_size, distance, created_at, updated_at;
+        """)
+        
+        values = {
+            "board_id": collection.board_id,
+            "collection_name": collection.collection_name,
+            "vector_size": collection.vector_size,
+            "distance": collection.distance
+        }
+        
+        result = self.execute_query(query, values)
+        if not result:
+            # Delete from Qdrant if database insert fails
+            self.qdrant_client.delete_collection(collection_name=collection.collection_name)
+            raise ValueError("Failed to create collection in database")
+            
+        collection_dict = {
+            "id": result[0],
+            "board_id": result[1],
+            "collection_name": result[2],
+            "vector_size": result[3],
+            "distance": result[4],
+            "created_at": result[5],
+            "updated_at": result[6]
+        }
+        
+        return RAGCollection(**collection_dict)
+
+    def get_collection(self, collection_id: int) -> Optional[RAGCollection]:
+        """Get a collection by ID"""
+        query = text("""
+            SELECT id, board_id, collection_name, vector_size, distance, created_at, updated_at
+            FROM RAGCollection
+            WHERE id = :collection_id;
+        """)
+        
+        result = self.execute_query(query, {"collection_id": collection_id})
+        if not result:
+            return None
+            
+        collection_dict = {
+            "id": result[0],
+            "board_id": result[1],
+            "collection_name": result[2],
+            "vector_size": result[3],
+            "distance": result[4],
+            "created_at": result[5],
+            "updated_at": result[6]
+        }
+        
+        return RAGCollection(**collection_dict)
+
+    def get_collections_by_board(self, board_id: int) -> List[RAGCollection]:
+        """Get all collections for a specific board"""
+        query = text("""
+            SELECT id, board_id, collection_name, vector_size, distance, created_at, updated_at
+            FROM RAGCollection
+            WHERE board_id = :board_id;
+        """)
+        
+        results = self.execute_query_all(query, {"board_id": board_id})
+        collections = []
+        
+        for result in results:
+            collection_dict = {
+                "id": result[0],
+                "board_id": result[1],
+                "collection_name": result[2],
+                "vector_size": result[3],
+                "distance": result[4],
+                "created_at": result[5],
+                "updated_at": result[6]
+            }
+            collections.append(RAGCollection(**collection_dict))
+            
+        return collections
+
+    def delete_collection(self, collection_id: int) -> bool:
+        """Delete a collection from Qdrant and database"""
+        # Get collection details first
+        collection = self.get_collection(collection_id)
+        if not collection:
+            return False
+            
+        # Delete from Qdrant
+        try:
+            self.qdrant_client.delete_collection(collection_name=collection.collection_name)
+        except Exception as e:
+            print(f"Warning: Could not delete collection from Qdrant: {str(e)}")
+            
+        # Delete from database
+        query = text("""
+            DELETE FROM RAGCollection
+            WHERE id = :collection_id
+            RETURNING id;
+        """)
+        
+        result = self.execute_query(query, {"collection_id": collection_id})
+        return result is not None
+
+    def submit_document_job(self, collection_id: int, file_path: str, filename: str, metadata: Dict = {}) -> str:
+        """Submit a document processing job"""
+        collection = self.get_collection(collection_id)
+        if not collection:
+            raise ValueError(f"Collection with ID {collection_id} not found")
+            
+        # Upload file to Google Cloud Storage
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        object_name = f"{collection.collection_name}/{timestamp}_{filename}"
+        
+        storage_path = self.storage_client.upload_file(object_name, file_path)
+        
+        # Create job request for RabbitMQ
+        job_id = str(uuid.uuid4())
+        message = {
+            "job_id": job_id,
+            "collection_name": collection.collection_name,
+            "storage_path": storage_path,
+            "metadata": metadata
+        }
+        
+        # Send message to RabbitMQ
+        rabbitmq_client = RabbitMQClient(
+            host=os.getenv("RABBITMQ_HOST", "localhost"),
+            queue=os.getenv("RABBITMQ_QUEUE", "document_processing"),
+            user=os.getenv("RABBITMQ_USER", "guest"),
+            password=os.getenv("RABBITMQ_PASSWORD", "guest")
+        )
+        
+        try:
+            rabbitmq_client.send_message(message, 0)
+            return job_id
+        finally:
+            rabbitmq_client.close()
+
+    def chat(self, collection_id: int, message: str, session_id: Optional[str] = None) -> Dict:
+        """Process a chat message and store chat history"""
+        from langchain.llms import OpenAI
+        from langchain.chains import ConversationChain
+        from langchain.memory import ConversationBufferMemory
+        
+        collection = self.get_collection(collection_id)
+        if not collection:
+            raise ValueError(f"Collection with ID {collection_id} not found")
+            
+        # Generate a session ID if not provided
+        session_id = session_id or str(uuid.uuid4())
+        
+        # Get vector embedding for the message
+        embedding = self.embeddings.encode([message])[0]
+        
+        # Search Qdrant for similar content
+        search_result = self.qdrant_client.search(
+            collection_name=collection.collection_name,
+            query_vector=embedding,
+            limit=5
+        )
+        
+        # Format context from search results
+        context = "\n\n".join([
+            f"Text: {hit.payload.get('text')}\n"
+            f"Page Number: {hit.payload.get('page_number')}\n"
+            f"Storage Path: {hit.payload.get('storage_path')}\n"
+            f"Metadata: {hit.payload.get('metadata')}"
+            for hit in search_result
+        ])
+        
+        # Generate response using OpenAI
+        memory = ConversationBufferMemory()
+        conversation = ConversationChain(llm=OpenAI(), memory=memory)
+        response = conversation.predict(input=f"Context: {context}\nUser: {message}")
+        
+        # Save user message
+        self.save_chat_message(collection_id, session_id, "user", message)
+        
+        # Save assistant response
+        self.save_chat_message(collection_id, session_id, "assistant", response)
+        
+        return {
+            "session_id": session_id,
+            "response": response
+        }
+
+    def save_chat_message(self, collection_id: int, session_id: str, sender: str, message: str) -> int:
+        """Save a chat message to the database"""
+        query = text("""
+            INSERT INTO ChatMessage
+            (collection_id, session_id, sender, message, timestamp)
+            VALUES
+            (:collection_id, :session_id, :sender, :message, CURRENT_TIMESTAMP)
+            RETURNING id;
+        """)
+        
+        values = {
+            "collection_id": collection_id,
+            "session_id": session_id,
+            "sender": sender,
+            "message": message
+        }
+        
+        result = self.execute_query(query, values)
+        return result[0] if result else None
+
+    def get_chat_history(self, collection_id: int, session_id: Optional[str] = None) -> List[ChatMessage]:
+        """Get chat history for a collection, optionally filtered by session ID"""
+        query_text = """
+            SELECT id, collection_id, session_id, sender, message, timestamp
+            FROM ChatMessage
+            WHERE collection_id = :collection_id
+        """
+        
+        params = {"collection_id": collection_id}
+        
+        if session_id:
+            query_text += " AND session_id = :session_id"
+            params["session_id"] = session_id
+            
+        query_text += " ORDER BY timestamp ASC"
+        query = text(query_text)
+        
+        results = self.execute_query_all(query, params)
+        messages = []
+        
+        for result in results:
+            message_dict = {
+                "id": result[0],
+                "collection_id": result[1],
+                "session_id": result[2],
+                "sender": result[3],
+                "message": result[4],
+                "timestamp": result[5]
+            }
+            messages.append(ChatMessage(**message_dict))
+            
+        return messages
+
+    def get_chat_sessions(self, collection_id: int) -> List[ChatSession]:
+        """Get all chat sessions for a collection"""
+        query = text("""
+            SELECT 
+                session_id,
+                MAX(timestamp) as last_message,
+                COUNT(id) as message_count
+            FROM ChatMessage
+            WHERE collection_id = :collection_id
+            GROUP BY session_id
+            ORDER BY MAX(timestamp) DESC;
+        """)
+        
+        results = self.execute_query_all(query, {"collection_id": collection_id})
+        sessions = []
+        
+        for result in results:
+            session = ChatSession(
+                session_id=result[0],
+                last_message=result[1],
+                message_count=result[2]
+            )
+            sessions.append(session)
+            
+        return sessions
+
+    def delete_chat_history(self, collection_id: int, session_id: str) -> int:
+        """Delete chat history for a specific session"""
+        query = text("""
+            DELETE FROM ChatMessage
+            WHERE collection_id = :collection_id AND session_id = :session_id
+            RETURNING id;
+        """)
+        
+        results = self.execute_query_all(query, {
+            "collection_id": collection_id,
+            "session_id": session_id
+        })
+        
+        return len(results)
+
+    def get_chat_stats(self, collection_id: int, start_date: Optional[datetime] = None, 
+                       end_date: Optional[datetime] = None) -> ChatStats:
+        """Get statistics for chat history"""
+        # Base query
+        query_text = """
+            SELECT COUNT(id) as total_messages
+            FROM ChatMessage
+            WHERE collection_id = :collection_id
+        """
+        
+        params = {"collection_id": collection_id}
+        
+        # Add date filters if provided
+        if start_date:
+            query_text += " AND timestamp >= :start_date"
+            params["start_date"] = start_date
+            
+        if end_date:
+            query_text += " AND timestamp <= :end_date"
+            params["end_date"] = end_date
+            
+        query = text(query_text)
+        result = self.execute_query(query, params)
+        total_messages = result[0] if result else 0
+        
+        # Count unique sessions
+        sessions_query_text = """
+            SELECT COUNT(DISTINCT session_id)
+            FROM ChatMessage
+            WHERE collection_id = :collection_id
+        """
+        
+        if start_date:
+            sessions_query_text += " AND timestamp >= :start_date"
+            
+        if end_date:
+            sessions_query_text += " AND timestamp <= :end_date"
+            
+        sessions_query = text(sessions_query_text)
+        sessions_result = self.execute_query(sessions_query, params)
+        unique_sessions = sessions_result[0] if sessions_result else 0
+        
+        # Get message counts by sender
+        sender_query_text = """
+            SELECT sender, COUNT(id)
+            FROM ChatMessage
+            WHERE collection_id = :collection_id
+        """
+        
+        if start_date:
+            sender_query_text += " AND timestamp >= :start_date"
+            
+        if end_date:
+            sender_query_text += " AND timestamp <= :end_date"
+            
+        sender_query_text += " GROUP BY sender"
+        sender_query = text(sender_query_text)
+        sender_results = self.execute_query_all(sender_query, params)
+        
+        message_counts = {}
+        for sender_result in sender_results:
+            message_counts[sender_result[0]] = sender_result[1]
+            
+        # Calculate average messages per session
+        avg_messages = total_messages / unique_sessions if unique_sessions > 0 else 0
+        
+        return ChatStats(
+            total_messages=total_messages,
+            unique_sessions=unique_sessions,
+            avg_messages_per_session=round(avg_messages, 2),
+            message_counts_by_sender=message_counts
+        )
+
+    def list_files(self, collection_id: int, prefix: Optional[str] = None, limit: int = 100) -> List[FileInfo]:
+        """List files for a collection"""
+        collection = self.get_collection(collection_id)
+        if not collection:
+            raise ValueError(f"Collection with ID {collection_id} not found")
+            
+        prefix_path = f"{collection.collection_name}/{prefix if prefix else ''}"
+        
+        # List objects in Google Cloud Storage
+        objects = self.storage_client.list_objects(prefix=prefix_path)
+        files = []
+        
+        for obj in objects[:limit]:
+            file_info = FileInfo(
+                filename=obj['name'].split('/')[-1],
+                size=obj['size'],
+                storage_path=obj['storage_path'],
+                metadata={}
+            )
+            files.append(file_info)
+            
+        return files
+
+    def delete_file(self, collection_id: int, filename: str, delete_vectors: bool = True) -> bool:
+        """Delete a file from storage and optionally from the vector database"""
+        collection = self.get_collection(collection_id)
+        if not collection:
+            raise ValueError(f"Collection with ID {collection_id} not found")
+            
+        prefix_path = collection.collection_name
+        
+        # Find the exact object name that matches the filename
+        objects = self.storage_client.list_objects(prefix=prefix_path)
+        target_object = None
+        target_storage_path = None
+        
+        for obj in objects:
+            if obj['name'].split('/')[-1] == filename:
+                target_object = obj['name']
+                target_storage_path = obj['storage_path']
+                break
+                
+        if not target_object:
+            raise ValueError(f"File {filename} not found in collection {collection.collection_name}")
+            
+        # Delete from Google Cloud Storage
+        self.storage_client.remove_object(target_object)
+        
+        # Delete vectors if requested
+        if delete_vectors and target_storage_path:
+            from qdrant_client.http.models import Filter, FieldCondition, MatchValue
+            
+            self.qdrant_client.delete(
+                collection_name=collection.collection_name,
+                points_filter=Filter(
+                    must=[
+                        FieldCondition(
+                            key="storage_path",
+                            match=MatchValue(value=target_storage_path)
+                        )
+                    ]
+                )
+            )
+            
+        return True

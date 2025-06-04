@@ -1,6 +1,6 @@
 # app/repositories/boards_repository.py
 
-from typing import Any
+from typing import Any, List, Optional
 from sqlalchemy import text
 from app.repositories.base_repository import BaseRepository
 from app.models.boards import Boards
@@ -22,91 +22,208 @@ class BoardsRepository(BaseRepository):
         
     def create_board(self, board: Boards) -> Any:
         query = text("""
-            INSERT INTO Boards (main_board_id, name, created_at, updated_at, is_active)
-            VALUES (:main_board_id, :name, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, :is_active)
-            RETURNING id, main_board_id, name, created_at, updated_at, is_active;
+            INSERT INTO Boards (main_board_id, name, is_active, created_at, updated_at)
+            VALUES (:main_board_id, :name, :is_active, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id, main_board_id, name, is_active, created_at, updated_at;
         """)
 
         values = {
             "main_board_id": board.main_board_id,
             "name": board.name,
-            "is_active": board.is_active if hasattr(board, 'is_active') else True,
+            "is_active": board.is_active if hasattr(board, 'is_active') and board.is_active is not None else True,
         }
 
         board_data_tuple = self.execute_query(query, values)
-        board_instance = Boards(**dict(zip(Boards.__annotations__, board_data_tuple)))
+        if not board_data_tuple:
+            return None
+            
+        board_dict = {
+            "id": board_data_tuple[0],
+            "main_board_id": board_data_tuple[1],
+            "name": board_data_tuple[2],
+            "is_active": board_data_tuple[3],
+            "created_at": board_data_tuple[4],
+            "updated_at": board_data_tuple[5]
+        }
+        
+        board_instance = Boards(**board_dict)
         return board_instance
 
-    def get_boards(self) -> Any:
+    def get_boards(self) -> List[Boards]:
         query = text("""
-            SELECT * FROM Boards;
+            SELECT id, main_board_id, name, is_active, created_at, updated_at
+            FROM Boards;
         """)
 
         board_data_list = self.execute_query_all(query)
-        board_dict = [Boards(**dict(zip(Boards.__annotations__, board_data))) for board_data in board_data_list]
-        return board_dict
+        board_list = []
+        
+        for board_data in board_data_list:
+            if board_data:
+                board_dict = {
+                    "id": board_data[0],
+                    "main_board_id": board_data[1],
+                    "name": board_data[2],
+                    "is_active": board_data[3],
+                    "created_at": board_data[4],
+                    "updated_at": board_data[5]
+                }
+                board_list.append(Boards(**board_dict))
+                
+        return board_list
 
-    def get_board(self, board_id: int) -> Any:
+    def get_board(self, board_id: int) -> Optional[Boards]:
         query = text("""
-            SELECT * FROM Boards WHERE id = :board_id;
+            SELECT id, main_board_id, name, is_active, created_at, updated_at
+            FROM Boards WHERE id = :board_id;
         """)
 
         values = {"board_id": board_id}
 
         board_data_tuple = self.execute_query(query, values)
-        board_instance = Boards(**dict(zip(Boards.__annotations__, board_data_tuple)))
+        if not board_data_tuple:
+            return None
+            
+        board_dict = {
+            "id": board_data_tuple[0],
+            "main_board_id": board_data_tuple[1],
+            "name": board_data_tuple[2],
+            "is_active": board_data_tuple[3],
+            "created_at": board_data_tuple[4],
+            "updated_at": board_data_tuple[5]
+        }
+        
+        board_instance = Boards(**board_dict)
         return board_instance
 
-    def update_board(self, board_id: int, board: Boards) -> Any:
+    def update_board(self, board_id: int, board: Boards) -> Optional[Boards]:
         query = text("""
             UPDATE Boards
             SET main_board_id = :main_board_id,
                 name = :name,
-                is_active = :is_active,  -- Add the update for 'is_active'
+                is_active = :is_active,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = :board_id
-            RETURNING id, main_board_id, name, created_at, updated_at, is_active;
+            RETURNING id, main_board_id, name, is_active, created_at, updated_at;
         """)
 
         values = {
             "main_board_id": board.main_board_id,
             "name": board.name,
-            "is_active": board.is_active,  # Assuming 'is_active' is a field in the Boards class
+            "is_active": board.is_active if hasattr(board, 'is_active') and board.is_active is not None else True,
             "board_id": board_id
         }
 
         board_data_tuple = self.execute_query(query, values)
-        board_instance = Boards(**dict(zip(Boards.__annotations__, board_data_tuple)))
+        if not board_data_tuple:
+            return None
+            
+        board_dict = {
+            "id": board_data_tuple[0],
+            "main_board_id": board_data_tuple[1],
+            "name": board_data_tuple[2],
+            "is_active": board_data_tuple[3],
+            "created_at": board_data_tuple[4],
+            "updated_at": board_data_tuple[5]
+        }
+        
+        board_instance = Boards(**board_dict)
         return board_instance
 
-    def delete_board(self, board_id: int) -> Any:
+    def delete_board(self, board_id: int) -> Optional[Boards]:
+        # First delete related records
+        # Delete prompts
         query = text("""
-            UPDATE Boards
-            SET is_active = FALSE,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = :board_id
-            RETURNING id, main_board_id, name, created_at, updated_at, is_active;
+            DELETE FROM Prompts WHERE board_id = :board_id;
+        """)
+        self.execute_query(query, {"board_id": board_id})
+        
+        # Delete AI documentation
+        query = text("""
+            DELETE FROM AiDocumentation WHERE board_id = :board_id;
+        """)
+        self.execute_query(query, {"board_id": board_id})
+        
+        # Delete data management tables and their associated table statuses
+        query = text("""
+            SELECT id FROM DataManagementTable WHERE board_id = :board_id;
+        """)
+        data_table_ids = self.execute_query_all(query, {"board_id": board_id})
+        
+        for data_table_id in data_table_ids:
+            if data_table_id:
+                query = text("""
+                    DELETE FROM TableStatus WHERE data_management_table_id = :data_table_id;
+                """)
+                self.execute_query(query, {"data_table_id": data_table_id[0]})
+        
+        query = text("""
+            DELETE FROM DataManagementTable WHERE board_id = :board_id;
+        """)
+        self.execute_query(query, {"board_id": board_id})
+        
+        # Finally, delete the board itself
+        query = text("""
+            DELETE FROM Boards WHERE id = :board_id
+            RETURNING id, main_board_id, name, is_active, created_at, updated_at;
         """)
 
         values = {"board_id": board_id}
 
         board_data_tuple = self.execute_query(query, values)
-        board_instance = Boards(**dict(zip(Boards.__annotations__, board_data_tuple)))
+        if not board_data_tuple:
+            return None
+            
+        board_dict = {
+            "id": board_data_tuple[0],
+            "main_board_id": board_data_tuple[1],
+            "name": board_data_tuple[2],
+            "is_active": board_data_tuple[3],
+            "created_at": board_data_tuple[4],
+            "updated_at": board_data_tuple[5]
+        }
+        
+        board_instance = Boards(**board_dict)
         return board_instance
     
-    def get_boards_for_main_boards(self, main_board_id: int) -> Any:
+    def get_boards_for_main_boards(self, main_board_id: int) -> List[Boards]:
         query = text("""
-            SELECT Boards.*
-            FROM Boards
-            JOIN MainBoard ON Boards.main_board_id = MainBoard.id
-            WHERE MainBoard.id = :main_board_id;
+            SELECT b.id, b.main_board_id, b.name, b.is_active, b.created_at, b.updated_at
+            FROM Boards b
+            JOIN MainBoard m ON b.main_board_id = m.id
+            WHERE m.id = :main_board_id;
         """)
 
         values = {"main_board_id": main_board_id}
 
         board_data_list = self.execute_query_all(query, values)
-        board_dict = [Boards(**dict(zip(Boards.__annotations__, board_data))) for board_data in board_data_list]
-        return board_dict
+        board_list = []
+        
+        for board_data in board_data_list:
+            if board_data:
+                board_dict = {
+                    "id": board_data[0],
+                    "main_board_id": board_data[1],
+                    "name": board_data[2],
+                    "is_active": board_data[3],
+                    "created_at": board_data[4],
+                    "updated_at": board_data[5]
+                }
+                board_list.append(Boards(**board_dict))
+                
+        return board_list
+    
+    def is_board_owned_by_user(self, board_id: int, user_id: int) -> bool:
+        """Check if a board is owned by a specific user through its main board."""
+        query = text("""
+            SELECT b.id 
+            FROM Boards b
+            JOIN MainBoard mb ON b.main_board_id = mb.id
+            WHERE b.id = :board_id AND mb.client_user_id = :user_id;
+        """)
+        values = {"board_id": board_id, "user_id": user_id}
+        result = self.execute_query(query, values)
+        return bool(result)
 
     def update_board_timestamp(self, board_id: int) -> None:
         query = text("""

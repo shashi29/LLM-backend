@@ -1,0 +1,1182 @@
+2025-05-21 07:00:10 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-21 07:00:10 [INFO] Rephrased Response:  Could you provide details on the type of information contained in the dataset?
+                
+2025-05-21 07:00:11 [INFO] Question: Could you provide details on the type of information contained in the dataset?
+2025-05-21 07:00:11 [INFO] Running PandasAI with langchain_openai-chat LLM...
+2025-05-21 07:00:11 [INFO] Prompt ID: e8063a9d-b750-4207-9975-11ef6bb8c6dd
+2025-05-21 07:00:11 [INFO] Executing Pipeline: GenerateChatPipeline
+2025-05-21 07:00:11 [INFO] Executing Step 0: ValidatePipelineInput
+2025-05-21 07:00:11 [INFO] Executing Step 1: CacheLookup
+2025-05-21 07:00:11 [INFO] Executing Step 2: PromptGeneration
+2025-05-21 07:00:11 [INFO] Using prompt: <dataframe>
+dfs[0]:497x3
+resource_id,meta_field,meta_value
+627ef956-5584-45b7-a5e1-0e3e8dd52ff3,image_id,Created by CreateImage(i-07a40bcffac8528d9) for ami-0341fcc6a8d062c48
+10dfb415-0459-4a1d-89d4-528e153cb519,last_attached,
+46fe0baa-2279-411a-951f-47ed5a4e071d,preinstalled,https://console.aws.amazon.com/s3/buckets/lambdasam-3d3986c07d-us-east-1?region=us-east-1&tab=objects
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+### QUERY
+ Could you provide details on the type of information contained in the dataset?
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+2025-05-21 07:00:11 [INFO] Executing Step 3: CodeGenerator
+2025-05-21 07:00:16 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-21 07:00:16 [INFO] Prompt used:
+            
+<dataframe>
+dfs[0]:497x3
+resource_id,meta_field,meta_value
+627ef956-5584-45b7-a5e1-0e3e8dd52ff3,image_id,Created by CreateImage(i-07a40bcffac8528d9) for ami-0341fcc6a8d062c48
+10dfb415-0459-4a1d-89d4-528e153cb519,last_attached,
+46fe0baa-2279-411a-951f-47ed5a4e071d,preinstalled,https://console.aws.amazon.com/s3/buckets/lambdasam-3d3986c07d-us-east-1?region=us-east-1&tab=objects
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+### QUERY
+ Could you provide details on the type of information contained in the dataset?
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+            
+2025-05-21 07:00:16 [INFO] Code generated:
+            ```
+            # TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Load the dataframe
+df = dfs[0]
+
+# Analyze the dataset
+columns_info = {
+    "resource_id": "Unique identifier for the resource",
+    "meta_field": "Type of metadata associated with the resource",
+    "meta_value": "Value of the metadata field"
+}
+
+# Prepare the result
+result = {
+    "type": "string",
+    "value": f"The dataset contains the following columns: {columns_info}"
+}
+
+# Declare result var
+print(result)
+            ```
+            
+2025-05-21 07:00:16 [INFO] Executing Step 4: CachePopulation
+2025-05-21 07:00:16 [INFO] Executing Step 5: CodeCleaning
+2025-05-21 07:00:16 [INFO] 
+Code running:
+```
+df = dfs[0]
+columns_info = {'resource_id': 'Unique identifier for the resource', 'meta_field': 'Type of metadata associated with the resource', 'meta_value': 'Value of the metadata field'}
+result = {'type': 'string', 'value': f'The dataset contains the following columns: {columns_info}'}
+print(result)
+        ```
+2025-05-21 07:00:16 [INFO] Executing Step 6: CodeExecution
+2025-05-21 07:00:17 [INFO] Executing Step 7: ResultValidation
+2025-05-21 07:00:17 [INFO] Answer: {'type': 'string', 'value': "The dataset contains the following columns: {'resource_id': 'Unique identifier for the resource', 'meta_field': 'Type of metadata associated with the resource', 'meta_value': 'Value of the metadata field'}"}
+2025-05-21 07:00:17 [INFO] Executing Step 8: ResultParsing
+2025-05-27 17:55:25 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-27 17:55:25 [INFO] Rephrased Response:  To extract the top 10 entries from the DataFrame based on the "Group" column, utilize the `nlargest()` function in Pandas. Begin by determining the column that holds the product names, which is the "Product Name" column in this scenario. Next, apply the `nlargest()` function with the correct parameters to choose the top 10 entries according to the "Group" column. Ensure to specify the column with the product names ("Product Name") and the desired number of entries (10) when using the `nlargest()` function to effectively identify the leading products in the DataFrame based on the chosen column.
+                
+2025-05-27 17:55:29 [INFO] Question: To extract the top 10 entries from the DataFrame based on the "Group" column, utilize the `nlargest()` function in Pandas. Begin by determining the column that holds the product names, which is the "Product Name" column in this scenario. Next, apply the `nlargest()` function with the correct parameters to choose the top 10 entries according to the "Group" column. Ensure to specify the column with the product names ("Product Name") and the desired number of entries (10) when using the `nlargest()` function to effectively identify the leading products in the DataFrame based on the chosen column.
+2025-05-27 17:55:29 [INFO] Running PandasAI with langchain_openai-chat LLM...
+2025-05-27 17:55:29 [INFO] Prompt ID: e117e731-057e-45d3-bc40-3b2da04ee65a
+2025-05-27 17:55:29 [INFO] Executing Pipeline: GenerateChatPipeline
+2025-05-27 17:55:29 [INFO] Executing Step 0: ValidatePipelineInput
+2025-05-27 17:55:29 [INFO] Executing Step 1: CacheLookup
+2025-05-27 17:55:29 [INFO] Executing Step 2: PromptGeneration
+2025-05-27 17:55:29 [INFO] Using prompt: <dataframe>
+dfs[0]:497x3
+resource_id,meta_field,meta_value
+080d96ae-9b49-4bcd-87f2-8fb6dfa93263,is_public_policy,ami-0df8c184d5f6ae949
+7b999f92-7c0a-4314-9940-d89fbb392bff,volume_id,
+62e2dd47-1f7d-4197-916a-d77e98b0ced4,volume_type,t3.large
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+### QUERY
+ To extract the top 10 entries from the DataFrame based on the "Group" column, utilize the `nlargest()` function in Pandas. Begin by determining the column that holds the product names, which is the "Product Name" column in this scenario. Next, apply the `nlargest()` function with the correct parameters to choose the top 10 entries according to the "Group" column. Ensure to specify the column with the product names ("Product Name") and the desired number of entries (10) when using the `nlargest()` function to effectively identify the leading products in the DataFrame based on the chosen column.
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+2025-05-27 17:55:29 [INFO] Executing Step 3: CodeGenerator
+2025-05-27 17:55:36 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-27 17:55:36 [INFO] Prompt used:
+            
+<dataframe>
+dfs[0]:497x3
+resource_id,meta_field,meta_value
+080d96ae-9b49-4bcd-87f2-8fb6dfa93263,is_public_policy,ami-0df8c184d5f6ae949
+7b999f92-7c0a-4314-9940-d89fbb392bff,volume_id,
+62e2dd47-1f7d-4197-916a-d77e98b0ced4,volume_type,t3.large
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+### QUERY
+ To extract the top 10 entries from the DataFrame based on the "Group" column, utilize the `nlargest()` function in Pandas. Begin by determining the column that holds the product names, which is the "Product Name" column in this scenario. Next, apply the `nlargest()` function with the correct parameters to choose the top 10 entries according to the "Group" column. Ensure to specify the column with the product names ("Product Name") and the desired number of entries (10) when using the `nlargest()` function to effectively identify the leading products in the DataFrame based on the chosen column.
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+            
+2025-05-27 17:55:36 [INFO] Code generated:
+            ```
+            # TODO: import the required dependencies
+import pandas as pd
+
+# Create a mock DataFrame for demonstration purposes
+data = {
+    "Product Name": ["Product A", "Product B", "Product C", "Product D", "Product E", 
+                     "Product F", "Product G", "Product H", "Product I", "Product J"],
+    "Group": [10, 20, 15, 30, 25, 5, 40, 35, 45, 50]
+}
+
+# Convert the dictionary to a DataFrame
+df = pd.DataFrame(data)
+
+# Extract the top 10 entries based on the "Group" column
+top_10_entries = df.nlargest(10, "Group")
+
+# Declare result var
+result = {
+    "type": "dataframe",
+    "value": top_10_entries
+}
+
+# Display the result
+print(result)
+            ```
+            
+2025-05-27 17:55:36 [INFO] Executing Step 4: CachePopulation
+2025-05-27 17:55:36 [INFO] Executing Step 5: CodeCleaning
+2025-05-27 17:55:36 [INFO] 
+Code running:
+```
+data = {'Product Name': ['Product A', 'Product B', 'Product C', 'Product D', 'Product E', 'Product F', 'Product G', 'Product H', 'Product I', 'Product J'], 'Group': [10, 20, 15, 30, 25, 5, 40, 35, 45, 50]}
+df = pd.DataFrame(data)
+top_10_entries = df.nlargest(10, 'Group')
+result = {'type': 'dataframe', 'value': top_10_entries}
+print(result)
+        ```
+2025-05-27 17:55:36 [INFO] Executing Step 6: CodeExecution
+2025-05-27 17:55:36 [INFO] Executing Step 7: ResultValidation
+2025-05-27 17:55:36 [INFO] Answer: {'type': 'dataframe', 'value':   Product Name  Group
+9    Product J     50
+8    Product I     45
+6    Product G     40
+7    Product H     35
+3    Product D     30
+4    Product E     25
+1    Product B     20
+2    Product C     15
+0    Product A     10
+5    Product F      5}
+2025-05-27 17:55:36 [INFO] Executing Step 8: ResultParsing
+2025-05-27 17:55:36 [INFO] Question: Please review the data.If there is any date column, then Sort the data by the date column and format the dates as %B-%Y.
+2025-05-27 17:55:36 [INFO] Running PandasAI with langchain_openai-chat LLM...
+2025-05-27 17:55:36 [INFO] Prompt ID: 6eebd52f-7482-49e9-b736-d5984bdb0a3b
+2025-05-27 17:55:36 [INFO] Executing Pipeline: GenerateChatPipeline
+2025-05-27 17:55:36 [INFO] Executing Step 0: ValidatePipelineInput
+2025-05-27 17:55:36 [INFO] Executing Step 1: CacheLookup
+2025-05-27 17:55:36 [INFO] Executing Step 2: PromptGeneration
+2025-05-27 17:55:36 [INFO] Using prompt: <dataframe>
+dfs[0]:10x2
+Product Name,Group
+Product E,50
+Product J,35
+Product B,15
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+### QUERY
+ Please review the data.If there is any date column, then Sort the data by the date column and format the dates as %B-%Y.
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+2025-05-27 17:55:36 [INFO] Executing Step 3: CodeGenerator
+2025-05-27 17:55:42 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-05-27 17:55:43 [INFO] Prompt used:
+            
+<dataframe>
+dfs[0]:10x2
+Product Name,Group
+Product E,50
+Product J,35
+Product B,15
+</dataframe>
+
+
+
+
+Update this initial code:
+```python
+# TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Declare result var: 
+type (possible values "string", "number", "dataframe", "plot"). Examples: { "type": "string", "value": f"The highest salary is {highest_salary}." } or { "type": "number", "value": 125 } or { "type": "dataframe", "value": pd.DataFrame({...}) } or { "type": "plot", "value": "temp_chart.png" }
+
+```
+
+
+
+### QUERY
+ Please review the data.If there is any date column, then Sort the data by the date column and format the dates as %B-%Y.
+
+Variable `dfs: list[pd.DataFrame]` is already declared.
+
+At the end, declare "result" variable as a dictionary of type and value.
+
+If you are asked to plot a chart, use "matplotlib" for charts, save as png.
+
+
+Generate python code and return full updated code:
+            
+2025-05-27 17:55:43 [INFO] Code generated:
+            ```
+            # TODO: import the required dependencies
+import pandas as pd
+
+# Write code here
+
+# Given DataFrame
+dfs = [pd.DataFrame({
+    "Product Name": ["Product E", "Product J", "Product B"],
+    "Group": [50, 35, 15]
+})]
+
+# Check for a date column and sort if necessary
+# In this case, there is no date column, so no sorting or formatting is needed
+
+# Declare result var: 
+result = {
+    "type": "dataframe",
+    "value": dfs[0]
+}
+            ```
+            
+2025-05-27 17:55:43 [INFO] Executing Step 4: CachePopulation
+2025-05-27 17:55:43 [INFO] Executing Step 5: CodeCleaning
+2025-05-27 17:55:43 [INFO] 
+Code running:
+```
+result = {'type': 'dataframe', 'value': dfs[0]}
+        ```
+2025-05-27 17:55:43 [INFO] Executing Step 6: CodeExecution
+2025-05-27 17:55:43 [INFO] Executing Step 7: ResultValidation
+2025-05-27 17:55:43 [INFO] Answer: {'type': 'dataframe', 'value':   Product Name  Group
+9    Product J     50
+8    Product I     45
+6    Product G     40
+7    Product H     35
+3    Product D     30
+4    Product E     25
+1    Product B     20
+2    Product C     15
+0    Product A     10
+5    Product F      5}
+2025-05-27 17:55:43 [INFO] Executing Step 8: ResultParsing
+2025-05-27 17:55:47 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-01 11:36:52 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-01 13:23:53 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-02 04:05:34 [INFO] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353963' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:2384)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 416, in _make_request
+    conn.request(method, url, **httplib_request_kw)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 244, in request
+    super(HTTPConnection, self).request(method, url, body=body, headers=headers)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/http/client.py", line 1276, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/http/client.py", line 1322, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/http/client.py", line 1271, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/http/client.py", line 1031, in _send_output
+    self.send(msg)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/http/client.py", line 992, in send
+    self.sock.sendall(data)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1236, in sendall
+    v = self.send(byte_view[count:])
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1205, in send
+    return self._sslobj.write(data)
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:2384)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:2384)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:2384)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:2384)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353819' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353811' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353899' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353795' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353891' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353865' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353787' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353827' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353803' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:31 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353873' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-06-02 04:45:32 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-353915' coro=<RefreshAheadCache._schedule_refresh.<locals>._refresh_task() done, defined at /root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py:152> exception=TransportError(SSLError(MaxRetryError("HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))")))>
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 716, in urlopen
+    httplib_response = self._make_request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 404, in _make_request
+    self._validate_conn(conn)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1061, in _validate_conn
+    conn.connect()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connection.py", line 419, in connect
+    self.sock = ssl_wrap_socket(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 458, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/ssl_.py", line 502, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 512, in wrap_socket
+    return self.sslsocket_class._create(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1070, in _create
+    self.do_handshake()
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/ssl.py", line 1341, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/connectionpool.py", line 802, in urlopen
+    retries = retries.increment(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/urllib3/util/retry.py", line 594, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 187, in __call__
+    response = self.session.request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/requests/adapters.py", line 698, in send
+    raise SSLError(e, request=request)
+requests.exceptions.SSLError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 162, in _refresh_task
+    refresh_data = await refresh_task
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/instance.py", line 117, in _perform_refresh
+    connection_info = await self._client.get_connection_info(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/cloud/sql/connector/client.py", line 278, in get_connection_info
+    self._credentials.refresh(requests.Request())
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/credentials.py", line 409, in refresh
+    ) = reauth.refresh_grant(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/reauth.py", line 333, in refresh_grant
+    response_status_ok, response_data, retryable_error = _client._token_endpoint_request_no_throw(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+  File "/root/miniconda3/envs/llm-backend/lib/python3.10/site-packages/google/auth/transport/requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: HTTPSConnectionPool(host='oauth2.googleapis.com', port=443): Max retries exceeded with url: /token (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))

@@ -169,3 +169,47 @@ async def verify_otp(form_data: OTPVerificationForm):
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Invalid OTP"
     )
+    
+@router.put("/extend-trial/{user_id}")
+async def extend_trial_period(user_id: int, days: int):
+    """
+    Extend the trial period for a user by adding the specified number of days.
+    
+    Args:
+        user_id: The ID of the user whose trial should be extended
+        days: Number of days to add to the trial period
+    """
+    # try:
+    # Validate that days is a positive number
+    if days <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Days must be a positive number"
+        )
+    
+    # Check if user exists
+    existing_user = users_repository.get_user(user_id)
+    if not existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="User not found"
+        )
+    
+    # Extend the trial period
+    updated_user = users_repository.extend_trial_period(user_id, days)
+    
+    if not updated_user:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail="Failed to extend trial period"
+        )
+    
+    return updated_user
+        
+    # except HTTPException as e:
+    #     raise e
+    # except Exception as e:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+    #         detail=f"An error occurred: {str(e)}"
+    #     )

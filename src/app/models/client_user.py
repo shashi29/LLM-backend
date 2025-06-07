@@ -41,7 +41,8 @@ class ClientUser(BaseModel):
                     "customer_number": "1234567890",
                     "subscription": "Gold",
                     "role": "Admin",
-                    "customer_other_details": "Other details"
+                    "customer_other_details": "Other details",
+                    "trial_end_date": "2025-12-31T23:59:59",
                 }
             ]
         }

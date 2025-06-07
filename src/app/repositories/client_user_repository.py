@@ -232,3 +232,41 @@ class ClientUsersRepository(BaseRepository):
         """)
         result = self.execute_query(query, values)
         return bool(result)
+    
+    def extend_trial_period(self, user_id: int, days: int) -> Any:
+        """Extend the trial period by adding the specified number of days."""
+        # First, get the current trial_end_date
+        get_query = text("""
+            SELECT trial_end_date FROM ClientUsers WHERE id = :user_id;
+        """)
+        
+        result = self.execute_query(get_query, {"user_id": user_id})
+        if not result or not result[0]:
+            return None
+        
+        current_trial_end = result[0]
+        
+        # Calculate new trial end date
+        new_trial_end = current_trial_end + timedelta(days=days)
+        
+        # Update the user
+        update_query = text("""
+            UPDATE ClientUsers
+            SET trial_end_date = :new_trial_end,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :user_id
+            RETURNING id, name, username, password, email, client_number, customer_number,
+                    subscription, role, customer_other_details, created_at, updated_at, 
+                    phone_number, trial_end_date;
+        """)
+
+        values = {
+            "user_id": user_id,
+            "new_trial_end": new_trial_end
+        }
+
+        user_data_tuple = self.execute_query(update_query, values)
+        if user_data_tuple:
+            user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
+            return user_instance
+        return None

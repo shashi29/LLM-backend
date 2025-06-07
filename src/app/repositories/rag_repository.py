@@ -113,13 +113,13 @@ class RAGRepository(BaseRepository):
     def __init__(self):
         super().__init__('RAGCollection')
         # Initialize required clients
-        self.qdrant_client = QdrantClient(url=os.getenv("QDRANT_URL", "http://localhost:6333"))
+        self.qdrant_client = QdrantClient(url=os.getenv("QDRANT_URL", "http://143.110.180.27:6333"))
         self.embeddings = SentenceTransformer("all-MiniLM-L6-v2")
         
         # Initialize Google Cloud Storage client
         self.storage_client = GoogleStorageClient(
             project_id=os.getenv("GCP_PROJECT_ID"),
-            bucket_name=os.getenv("GCS_BUCKET_NAME", "documents")
+            bucket_name=os.getenv("GCS_BUCKET_NAME", "document_ocr_sr")
         )
         
         # Create the table if it doesn't exist
@@ -296,10 +296,10 @@ class RAGRepository(BaseRepository):
         
         # Send message to RabbitMQ
         rabbitmq_client = RabbitMQClient(
-            host=os.getenv("RABBITMQ_HOST", "localhost"),
+            host="http://94.72.117.126:5672",
             queue=os.getenv("RABBITMQ_QUEUE", "document_processing"),
-            user=os.getenv("RABBITMQ_USER", "guest"),
-            password=os.getenv("RABBITMQ_PASSWORD", "guest")
+            user=os.getenv("RABBITMQ_USER", "cwRI82uX5HyT"),
+            password=os.getenv("RABBITMQ_PASSWORD", "9j4u6PluofN5")
         )
         
         try:

@@ -60,3 +60,13 @@ class BaseRepository:
                 cursor.commit()
         finally:
             connection.dispose()
+            
+    def execute_delete_query(self, query, values=None):
+        """Execute a DELETE query without expecting return values."""
+        connection = get_database_connection()
+        try:
+            with connection.connect() as cursor:
+                cursor.execute(query, values)
+                cursor.commit()
+        finally:
+            connection.dispose()

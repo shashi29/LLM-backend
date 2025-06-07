@@ -39,6 +39,8 @@ class MainBoardRepository(BaseRepository):
         """)
         values = {"main_board_id": main_board_id}
         main_board_data_tuple = self.execute_query(query, values)
+        if not main_board_data_tuple:
+            return None
         main_board_instance = MainBoard(**dict(zip(MainBoard.__annotations__, main_board_data_tuple)))
         return main_board_instance
 
@@ -73,70 +75,179 @@ class MainBoardRepository(BaseRepository):
             "main_board_id": main_board_id
         }
         main_board_data_tuple = self.execute_query(query, values)
+        if not main_board_data_tuple:
+            return None
         main_board_instance = MainBoard(**dict(zip(MainBoard.__annotations__, main_board_data_tuple)))
         return main_board_instance
 
     def delete_main_board(self, main_board_id: int) -> Any:
-        # First, delete all boards associated with this main board
+        # Get the main board details before deletion
+        main_board = self.get_main_board(main_board_id)
+        if not main_board:
+            return None
+            
+        # Delete everything in the correct order
         self.delete_boards_for_main_board(main_board_id)
         
-        # Then delete the main board itself
+        # Finally, delete the main board itself
         query = text("""
-            DELETE FROM MainBoard WHERE id = :main_board_id
-            RETURNING id, client_user_id, name, main_board_type, created_at, updated_at;
+            DELETE FROM MainBoard WHERE id = :main_board_id;
         """)
         values = {"main_board_id": main_board_id}
-        main_board_data_tuple = self.execute_query(query, values)
-        main_board_instance = MainBoard(**dict(zip(MainBoard.__annotations__, main_board_data_tuple)))
-        return main_board_instance
+        self.execute_delete_query(query, values)
+        
+        return main_board  # Return the main board that was deleted
     
     def delete_boards_for_main_board(self, main_board_id: int) -> None:
-        """Delete all boards associated with a main board."""
-        # First, find all boards for this main board
+        """Delete all boards associated with a main board and their related data."""
+        # First, get all board IDs for this main board
         query = text("""
             SELECT id FROM Boards WHERE main_board_id = :main_board_id;
         """)
         values = {"main_board_id": main_board_id}
-        board_ids = self.execute_query_all(query, values)
+        board_results = self.execute_query_all(query, values)
         
-        # For each board, delete associated records (prompts, AI documentation, data tables)
+        # Extract board IDs from results
+        board_ids = [result[0] for result in board_results if result]
+        
+        # For each board, delete all related data in the correct order
         for board_id in board_ids:
-            if board_id:
-                # Delete prompts
-                query = text("""
-                    DELETE FROM Prompts WHERE board_id = :board_id;
-                """)
-                self.execute_query(query, {"board_id": board_id[0]})
-                
-                # Delete AI documentation
-                query = text("""
-                    DELETE FROM AiDocumentation WHERE board_id = :board_id;
-                """)
-                self.execute_query(query, {"board_id": board_id[0]})
-                
-                # Delete data management tables and their associated table statuses
-                query = text("""
-                    SELECT id FROM DataManagementTable WHERE board_id = :board_id;
-                """)
-                data_table_ids = self.execute_query_all(query, {"board_id": board_id[0]})
-                
-                for data_table_id in data_table_ids:
-                    if data_table_id:
-                        query = text("""
-                            DELETE FROM TableStatus WHERE data_management_table_id = :data_table_id;
-                        """)
-                        self.execute_query(query, {"data_table_id": data_table_id[0]})
-                
-                query = text("""
-                    DELETE FROM DataManagementTable WHERE board_id = :board_id;
-                """)
-                self.execute_query(query, {"board_id": board_id[0]})
+            self.delete_board_related_data(board_id)
         
         # Finally, delete all boards for this main board
         query = text("""
             DELETE FROM Boards WHERE main_board_id = :main_board_id;
         """)
-        self.execute_query(query, {"main_board_id": main_board_id})
+        values = {"main_board_id": main_board_id}
+        self.execute_delete_query(query, values)
+    
+    def delete_board_related_data(self, board_id: int) -> None:
+        """Delete all data related to a specific board in the correct order."""
+        
+        print(f"Deleting related data for board_id: {board_id}")
+        
+        # 1. Delete prompt responses first (they reference prompts and boards)
+        try:
+            query = text("""
+                DELETE FROM Prompts_response WHERE board_id = :board_id;
+            """)
+            self.execute_delete_query(query, {"board_id": board_id})
+            print(f"Deleted prompt responses for board {board_id}")
+        except Exception as e:
+            print(f"Warning: Could not delete from Prompts_response: {e}")
+        
+        # 2. Delete prompts (they reference boards)
+        try:
+            query = text("""
+                DELETE FROM Prompts WHERE board_id = :board_id;
+            """)
+            self.execute_delete_query(query, {"board_id": board_id})
+            print(f"Deleted prompts for board {board_id}")
+        except Exception as e:
+            print(f"Warning: Could not delete prompts: {e}")
+        
+        # 3. Delete AI documentation (references boards)
+        try:
+            query = text("""
+                DELETE FROM AiDocumentation WHERE board_id = :board_id;
+            """)
+            self.execute_delete_query(query, {"board_id": board_id})
+            print(f"Deleted AI documentation for board {board_id}")
+        except Exception as e:
+            print(f"Warning: Could not delete AI documentation: {e}")
+        
+        # 4. Delete RAG collections and their chat messages (if RAG tables exist)
+        try:
+            # First get RAG collection IDs
+            query = text("""
+                SELECT id FROM RAGCollection WHERE board_id = :board_id;
+            """)
+            rag_collection_results = self.execute_query_all(query, {"board_id": board_id})
+            
+            # Delete chat messages for each RAG collection
+            for rag_result in rag_collection_results:
+                if rag_result:
+                    rag_collection_id = rag_result[0]
+                    query = text("""
+                        DELETE FROM ChatMessage WHERE collection_id = :collection_id;
+                    """)
+                    self.execute_delete_query(query, {"collection_id": rag_collection_id})
+                    print(f"Deleted chat messages for RAG collection {rag_collection_id}")
+            
+            # Delete RAG collections
+            query = text("""
+                DELETE FROM RAGCollection WHERE board_id = :board_id;
+            """)
+            self.execute_delete_query(query, {"board_id": board_id})
+            print(f"Deleted RAG collections for board {board_id}")
+        except Exception as e:
+            print(f"Warning: Could not delete RAG data: {e}")
+        
+        # 5. Delete table statuses first, then data management tables
+        try:
+            # Get all data management table IDs for this board
+            query = text("""
+                SELECT id FROM DataManagementTable WHERE board_id = :board_id;
+            """)
+            data_table_results = self.execute_query_all(query, {"board_id": board_id})
+            
+            # Delete table statuses for each data management table
+            for data_result in data_table_results:
+                if data_result:
+                    data_table_id = data_result[0]
+                    query = text("""
+                        DELETE FROM TableStatus WHERE data_management_table_id = :data_table_id;
+                    """)
+                    self.execute_delete_query(query, {"data_table_id": data_table_id})
+                    print(f"Deleted table statuses for data table {data_table_id}")
+            
+            # Delete data management tables
+            query = text("""
+                DELETE FROM DataManagementTable WHERE board_id = :board_id;
+            """)
+            self.execute_delete_query(query, {"board_id": board_id})
+            print(f"Deleted data management tables for board {board_id}")
+        except Exception as e:
+            print(f"Warning: Could not delete data management tables: {e}")
+        
+        # 6. Check for any other tables that might reference boards
+        self.delete_any_remaining_board_references(board_id)
+        
+        print(f"Completed deletion of related data for board {board_id}")
+    
+    def delete_any_remaining_board_references(self, board_id: int) -> None:
+        """Delete any remaining references to the board from other tables."""
+        
+        # List of potential tables that might reference boards
+        # Add any other tables that reference boards in your system
+        potential_tables = [
+            "time_line_settings",  # if this table exists
+            "board_settings",      # if this table exists
+            "user_board_access",   # if this table exists
+        ]
+        
+        for table_name in potential_tables:
+            try:
+                # Try to delete from each potential table
+                query = text(f"""
+                    DELETE FROM {table_name} WHERE board_id = :board_id;
+                """)
+                self.execute_delete_query(query, {"board_id": board_id})
+                print(f"Deleted from {table_name} for board {board_id}")
+            except Exception as e:
+                # Table might not exist or might not have board_id column
+                print(f"Skipping {table_name}: {e}")
+                continue
+    
+    def execute_delete_query(self, query, values=None):
+        """Execute a DELETE query without expecting return values."""
+        connection = self.get_database_connection()
+        try:
+            with connection.connect() as cursor:
+                cursor.execute(query, values)
+                cursor.commit()
+        finally:
+            connection.dispose()
 
     def convert_to_tree_structure(self, data: List[Tuple[int, str, Optional[int], str]]) -> List[Dict[str, Any]]:
         tree = {}
@@ -214,3 +325,8 @@ class MainBoardRepository(BaseRepository):
         values = {"main_board_id": main_board_id, "user_id": user_id}
         result = self.execute_query(query, values)
         return bool(result)
+
+    def get_database_connection(self):
+        """Get database connection from the base repository."""
+        from app.database import get_database_connection
+        return get_database_connection()

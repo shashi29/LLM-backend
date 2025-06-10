@@ -82,14 +82,23 @@ async def create_main_board(main_board: MainBoard, user_id: int = Depends(check_
         main_board.client_user_id = user_id
         created_main_board = main_board_repository.create_main_board(main_board)
         return created_main_board
-    except HTTPException as e:
-        raise e
+    except ValueError as e:
+        # Handle the specific duplicate name error
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while creating the main board: {str(e)}"
+        )
 
 @router.get("/", response_model=List[MainBoard])
 async def get_all_main_boards(user_id: int = Depends(check_trial_active)):
     # Get only main boards owned by this user
     main_boards = main_board_repository.get_main_boards_by_user(user_id)
-    order = ["ANALYSIS", "FORECASTING", "REVENUE", "PROFITABILITY", "COGS", "CASH FLOW", "BUDGET", "VARIANCE ANALYSIS"]
+    order = ["ANALYSIS", "FORECASTING", "REVENUE", "PROFITABILITY", "COGS", "CASH FLOW", "BUDGET", "VARIANCE ANALYSIS", "RAG"]
     main_boards = sorted(main_boards, key=lambda x: order.index(x.name) if x.name in order else len(order))
     
     return main_boards
@@ -140,8 +149,19 @@ async def update_main_board(main_board_id: int, main_board: MainBoard, user_id: 
         if not updated_main_board:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Main Board not found")
         return updated_main_board
+    except ValueError as e:
+        # Handle the specific duplicate name error
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
     except HTTPException as e:
         raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while updating the main board: {str(e)}"
+        )
 
 @router.delete("/{main_board_id}", response_model=MainBoard)
 async def delete_main_board(main_board_id: int, user_id: int = Depends(check_trial_active)):

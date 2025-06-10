@@ -1,3 +1,4 @@
+# app/repositories/main_board_repository.py
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy import text
 from app.repositories.base_repository import BaseRepository
@@ -6,19 +7,40 @@ from app.models.main_board import MainBoard
 class MainBoardRepository(BaseRepository):
     def __init__(self):
         super().__init__('MainBoard')
+        
+        # First, try to drop the old unique constraint if it exists
+        try:
+            drop_constraint_query = text("""
+                ALTER TABLE MainBoard DROP CONSTRAINT IF EXISTS mainboard_name_key;
+            """)
+            self.create_table(drop_constraint_query)
+        except Exception as e:
+            print(f"Note: Could not drop old constraint (might not exist): {e}")
+        
+        # Create table with updated constraints
         create_table_query = text("""
             CREATE TABLE IF NOT EXISTS MainBoard (
                 id SERIAL PRIMARY KEY,
                 client_user_id INT REFERENCES ClientUsers(id),
-                name VARCHAR UNIQUE,
-                main_board_type VARCHAR,
+                name VARCHAR(255) NOT NULL,
+                main_board_type VARCHAR(255),
                 created_at TIMESTAMP,
-                updated_at TIMESTAMP
+                updated_at TIMESTAMP,
+                UNIQUE(client_user_id, name)
             );
         """)
         self.create_table(create_table_query)
 
     def create_main_board(self, main_board: MainBoard) -> Any:
+        # Check if user already has a main board with this name
+        existing_board = self.get_main_board_by_user_and_name(
+            main_board.client_user_id, 
+            main_board.name
+        )
+        
+        if existing_board:
+            raise ValueError(f"You already have a main board named '{main_board.name}'. Please choose a different name.")
+        
         query = text("""
             INSERT INTO MainBoard (client_user_id, name, main_board_type, created_at, updated_at)
             VALUES (:client_user_id, :name, :main_board_type, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -29,7 +51,30 @@ class MainBoardRepository(BaseRepository):
             "name": main_board.name,
             "main_board_type": main_board.main_board_type
         }
+        
+        try:
+            main_board_data_tuple = self.execute_query(query, values)
+            main_board_instance = MainBoard(**dict(zip(MainBoard.__annotations__, main_board_data_tuple)))
+            return main_board_instance
+        except Exception as e:
+            if "duplicate key value violates unique constraint" in str(e):
+                raise ValueError(f"You already have a main board named '{main_board.name}'. Please choose a different name.")
+            else:
+                raise e
+
+    def get_main_board_by_user_and_name(self, client_user_id: int, name: str) -> Optional[MainBoard]:
+        """Get a main board by user ID and name."""
+        query = text("""
+            SELECT id, client_user_id, name, main_board_type, created_at, updated_at
+            FROM MainBoard 
+            WHERE client_user_id = :client_user_id AND name = :name;
+        """)
+        values = {"client_user_id": client_user_id, "name": name}
         main_board_data_tuple = self.execute_query(query, values)
+        
+        if not main_board_data_tuple:
+            return None
+            
         main_board_instance = MainBoard(**dict(zip(MainBoard.__annotations__, main_board_data_tuple)))
         return main_board_instance
 
@@ -55,7 +100,7 @@ class MainBoardRepository(BaseRepository):
     def get_main_boards_by_user(self, user_id: int) -> Any:
         """Get all main boards for a specific user."""
         query = text("""
-            SELECT * FROM MainBoard WHERE client_user_id = :user_id;
+            SELECT * FROM MainBoard WHERE client_user_id = :user_id ORDER BY created_at DESC;
         """)
         values = {"user_id": user_id}
         main_boards_data_list = self.execute_query_all(query, values)
@@ -63,22 +108,39 @@ class MainBoardRepository(BaseRepository):
         return main_boards
 
     def update_main_board(self, main_board_id: int, main_board: MainBoard) -> Any:
+        # Check if user already has another main board with this name
+        existing_board = self.get_main_board_by_user_and_name(
+            main_board.client_user_id, 
+            main_board.name
+        )
+        
+        if existing_board and existing_board.id != main_board_id:
+            raise ValueError(f"You already have a main board named '{main_board.name}'. Please choose a different name.")
+        
         query = text("""
             UPDATE MainBoard
-            SET client_user_id = :client_user_id, name = :name, updated_at = CURRENT_TIMESTAMP
+            SET client_user_id = :client_user_id, name = :name, main_board_type = :main_board_type, updated_at = CURRENT_TIMESTAMP
             WHERE id = :main_board_id
             RETURNING id, client_user_id, name, main_board_type, created_at, updated_at;
         """)
         values = {
             "client_user_id": main_board.client_user_id,
             "name": main_board.name,
+            "main_board_type": main_board.main_board_type,
             "main_board_id": main_board_id
         }
-        main_board_data_tuple = self.execute_query(query, values)
-        if not main_board_data_tuple:
-            return None
-        main_board_instance = MainBoard(**dict(zip(MainBoard.__annotations__, main_board_data_tuple)))
-        return main_board_instance
+        
+        try:
+            main_board_data_tuple = self.execute_query(query, values)
+            if not main_board_data_tuple:
+                return None
+            main_board_instance = MainBoard(**dict(zip(MainBoard.__annotations__, main_board_data_tuple)))
+            return main_board_instance
+        except Exception as e:
+            if "duplicate key value violates unique constraint" in str(e):
+                raise ValueError(f"You already have a main board named '{main_board.name}'. Please choose a different name.")
+            else:
+                raise e
 
     def delete_main_board(self, main_board_id: int) -> Any:
         # Get the main board details before deletion
@@ -210,34 +272,7 @@ class MainBoardRepository(BaseRepository):
         except Exception as e:
             print(f"Warning: Could not delete data management tables: {e}")
         
-        # 6. Check for any other tables that might reference boards
-        self.delete_any_remaining_board_references(board_id)
-        
         print(f"Completed deletion of related data for board {board_id}")
-    
-    def delete_any_remaining_board_references(self, board_id: int) -> None:
-        """Delete any remaining references to the board from other tables."""
-        
-        # List of potential tables that might reference boards
-        # Add any other tables that reference boards in your system
-        potential_tables = [
-            "time_line_settings",  # if this table exists
-            "board_settings",      # if this table exists
-            "user_board_access",   # if this table exists
-        ]
-        
-        for table_name in potential_tables:
-            try:
-                # Try to delete from each potential table
-                query = text(f"""
-                    DELETE FROM {table_name} WHERE board_id = :board_id;
-                """)
-                self.execute_delete_query(query, {"board_id": board_id})
-                print(f"Deleted from {table_name} for board {board_id}")
-            except Exception as e:
-                # Table might not exist or might not have board_id column
-                print(f"Skipping {table_name}: {e}")
-                continue
     
     def execute_delete_query(self, query, values=None):
         """Execute a DELETE query without expecting return values."""
@@ -309,7 +344,8 @@ class MainBoardRepository(BaseRepository):
                         LEFT JOIN
                             Boards b ON mb.id = b.main_board_id
                         WHERE
-                            mb.client_user_id = :user_id;
+                            mb.client_user_id = :user_id
+                        ORDER BY mb.created_at DESC;
                     """)
         values = {"user_id": user_id}
         user_info_tree = self.execute_query_all(query, values)

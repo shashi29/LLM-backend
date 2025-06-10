@@ -34,14 +34,23 @@ async def get_boards(user_id: int = Depends(check_trial_active)):
 
 @router.get("/{board_id}", response_model=Boards)
 async def get_board(board_id: int, user_id: int = Depends(check_trial_active)):
+    # Add debugging
+    debug_info = boards_repository.debug_board_info(board_id)
+    print(f"Debug info for board {board_id}: {debug_info}")
+    
     # Check if the board belongs to this user
-    if not boards_repository.is_board_owned_by_user(board_id, user_id):
+    is_owned = boards_repository.is_board_owned_by_user(board_id, user_id)
+    print(f"Board {board_id} ownership check for user {user_id}: {is_owned}")
+    
+    if not is_owned:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied. This board does not belong to you."
         )
     
     board = boards_repository.get_board(board_id)
+    print(f"Retrieved board: {board}")
+    
     if not board:
         raise HTTPException(status_code=404, detail="Board not found")
     return board

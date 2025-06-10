@@ -82,20 +82,32 @@ class BoardsRepository(BaseRepository):
         values = {"board_id": board_id}
 
         board_data_tuple = self.execute_query(query, values)
+        
+        # Add debug logging
+        print(f"get_board query result for board_id={board_id}: {board_data_tuple}")
+        
         if not board_data_tuple:
+            print(f"No board found with id {board_id}")
             return None
             
-        board_dict = {
-            "id": board_data_tuple[0],
-            "main_board_id": board_data_tuple[1],
-            "name": board_data_tuple[2],
-            "is_active": board_data_tuple[3],
-            "created_at": board_data_tuple[4],
-            "updated_at": board_data_tuple[5]
-        }
-        
-        board_instance = Boards(**board_dict)
-        return board_instance
+        try:
+            board_dict = {
+                "id": board_data_tuple[0],
+                "main_board_id": board_data_tuple[1],
+                "name": board_data_tuple[2],
+                "is_active": board_data_tuple[3],
+                "created_at": board_data_tuple[4],
+                "updated_at": board_data_tuple[5]
+            }
+            
+            board_instance = Boards(**board_dict)
+            print(f"Successfully created board instance: {board_instance}")
+            return board_instance
+            
+        except Exception as e:
+            print(f"Error creating board instance: {e}")
+            print(f"Data received: {board_data_tuple}")
+            return None
 
     def update_board(self, board_id: int, board: Boards) -> Optional[Boards]:
         query = text("""
@@ -294,8 +306,17 @@ class BoardsRepository(BaseRepository):
             WHERE b.id = :board_id AND mb.client_user_id = :user_id;
         """)
         values = {"board_id": board_id, "user_id": user_id}
+        
+        # Add debug logging
+        print(f"Checking ownership for board_id={board_id}, user_id={user_id}")
+        
         result = self.execute_query(query, values)
-        return bool(result)
+        print(f"Ownership query result: {result}")
+        
+        is_owned = bool(result)
+        print(f"Board {board_id} owned by user {user_id}: {is_owned}")
+        
+        return is_owned
 
     def update_board_timestamp(self, board_id: int) -> None:
         query = text("""
@@ -306,3 +327,28 @@ class BoardsRepository(BaseRepository):
 
         values = {"board_id": board_id}
         self.execute_query(query, values)
+        
+    def debug_board_info(self, board_id: int):
+        """Debug method to get detailed board information."""
+        # First, check if board exists
+        board_query = text("""
+            SELECT id, main_board_id, name, is_active, created_at, updated_at
+            FROM Boards WHERE id = :board_id;
+        """)
+        board_result = self.execute_query(board_query, {"board_id": board_id})
+        
+        # Get main board info if board exists
+        main_board_info = None
+        if board_result:
+            main_board_query = text("""
+                SELECT id, client_user_id, name, main_board_type
+                FROM MainBoard WHERE id = :main_board_id;
+            """)
+            main_board_info = self.execute_query(main_board_query, {"main_board_id": board_result[1]})
+        
+        return {
+            "board_exists": bool(board_result),
+            "board_data": board_result,
+            "main_board_data": main_board_info,
+            "raw_query_result": board_result
+        }

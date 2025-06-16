@@ -8,7 +8,6 @@ uvicorn
 gunicorn==20.1.0
 Werkzeug==3.0.1
 python-multipart
-pandas
 langchain
 langchain_experimental
 langchain_openai

@@ -172,6 +172,8 @@ class ClientUsersRepository(BaseRepository):
         """)
         values = {"email": user_data.email, "password": user_data.password}
         user_data_tuple = self.execute_query(query, values)
+        if not user_data_tuple:
+            return None
         user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
         return user_instance
 

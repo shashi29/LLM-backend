@@ -13,6 +13,9 @@ COPY . ./
 # Install production dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install additional dependencies for the web service
+RUN pip install --upgrade numpy pandas
+
 # Set an environment variable for the port
 ENV PORT 1234
 

@@ -29,3 +29,7 @@ python-multipart==0.0.6
 python-dotenv==1.0.0
 openai
 langchain
+sqlmodel
+matplotlib
+
+

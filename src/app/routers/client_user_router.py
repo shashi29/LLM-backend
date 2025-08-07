@@ -31,6 +31,7 @@ async def create_user(
     trial_days: Optional[int] = Query(default=30, ge=1, le=30, description="Trial days for BASIC subscription (1-30 days)"),
     token: str = Depends(verify_token)
 ):
+    
     """
     Create a new user with subscription management.
     

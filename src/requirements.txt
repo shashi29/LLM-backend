@@ -31,5 +31,5 @@ openai
 langchain
 sqlmodel
 matplotlib
-
+python-pptx
 

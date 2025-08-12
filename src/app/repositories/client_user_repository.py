@@ -348,108 +348,40 @@ def send_email_via_msg91(receiver_email: str, otp: str) -> bool:
         raise e
     
 class ClientUsersRepository:
-    def __init__(self):
-        try:
-            # Get the values from the environment
+    try:
             db_user = os.getenv("DB_USER")
             db_password = os.getenv("DB_PASSWORD")
             db_host = os.getenv("DB_HOST")
             db_port = os.getenv("DB_PORT")
             db_name = os.getenv("DB_NAME")
             
-            # TEMPORARY FIX: Override with correct values for Cloud SQL Proxy
-            if ":" in str(db_host):
-                print("⚠️  Detected old Cloud SQL format, overriding with proxy settings")
-                db_host = "127.0.0.1"
-                db_port = "5433"
-                print(f"✅ Using proxy connection: {db_host}:{db_port}")
-            
             print(f"Connection attempt with: {db_user}@{db_host}:{db_port}/{db_name}")
-            
-            
-            # Validate required environment variables
-            if not all([db_user, db_password, db_host, db_name]):
-                missing_vars = []
-                if not db_user: missing_vars.append("DB_USER")
-                if not db_password: missing_vars.append("DB_PASSWORD") 
-                if not db_host: missing_vars.append("DB_HOST")
-                if not db_name: missing_vars.append("DB_NAME")
-                raise Exception(f"Missing required environment variables: {', '.join(missing_vars)}")
             
             # Use urllib.parse to properly encode the password for a database URL
             from urllib.parse import quote_plus
             db_password_encoded = quote_plus(db_password)
             
-            # For Cloud SQL Proxy connection (localhost)
-            if db_host == "127.0.0.1" or db_host == "localhost":
-                print("✅ Using Cloud SQL Proxy connection")
-                
-                if db_port:
-                    try:
-                        port_num = int(db_port)
-                        if port_num <= 0 or port_num > 65535:
-                            raise ValueError("Port must be between 1 and 65535")
-                    except ValueError as e:
-                        raise Exception(f"Invalid port number '{db_port}': {e}")
-                    
-                    self.database_url = f"postgresql://{db_user}:{db_password_encoded}@{db_host}:{db_port}/{db_name}"
-                else:
-                    self.database_url = f"postgresql://{db_user}:{db_password_encoded}@{db_host}:5432/{db_name}"
-                    
-            else:
-                # Handle other connection types as before
-                if ":" in db_host and not db_port:
-                    print("Detected Cloud SQL connection name format")
-                    self.database_url = f"postgresql+psycopg2://{db_user}:{db_password_encoded}@/{db_name}?host=/cloudsql/{db_host}"
-                    
-                elif db_port:
-                    print("Using standard host:port connection")
-                    try:
-                        port_num = int(db_port)
-                        if port_num <= 0 or port_num > 65535:
-                            raise ValueError("Port must be between 1 and 65535")
-                    except ValueError as e:
-                        raise Exception(f"Invalid port number '{db_port}': {e}")
-                    
-                    self.database_url = f"postgresql://{db_user}:{db_password_encoded}@{db_host}:{db_port}/{db_name}"
-                    
-                else:
-                    print("Using host with default port (5432)")
-                    self.database_url = f"postgresql://{db_user}:{db_password_encoded}@{db_host}:5432/{db_name}"
-            
-            
-            print(f"Final database URL format: {self.database_url.replace(db_password_encoded, '***')}")
+            # Construct the database URL with the encoded password
+            self.database_url = f"postgresql://{db_user}:{db_password_encoded}@{db_host}:{db_port}/{db_name}"
             
             # Create engine with the URL
             self.engine = create_engine(
                 self.database_url,
-                echo=True,  # Set to False in production
-                pool_pre_ping=True,  # Verify connections before use
-                pool_recycle=3600   # Recycle connections every hour
+                echo=True  # Set to False in production
             )
             
             # Test connection
             with self.engine.connect() as conn:
-                print("✅ Database connection successful!")
+                print("Database connection successful!")
                 
             # Create tables
             ClientUser.metadata.create_all(self.engine)
             OTP.metadata.create_all(self.engine)
-            print("✅ Database tables created/verified!")
-            
         except Exception as e:
-            print(f"❌ Database connection error: {e}")
-            print("\n🔧 TROUBLESHOOTING TIPS:")
-            print("1. Make sure Cloud SQL Proxy is running:")
-            print("   cloud-sql-proxy --port 5433 'reliable-vector-429905-e8:us-central1:backend-database'")
-            print("2. Check your .env file has:")
-            print("   DB_HOST=127.0.0.1")
-            print("   DB_PORT=5433")
-            print("3. Verify database credentials are correct")
-            print(f"4. Current connection: {db_user}@{db_host}:{db_port}/{db_name}")
-            
-            # Don't raise in production, but useful for debugging
+            print(f"Database connection error: {e}")
+            # Fallback to a different approach or raise the error
             raise e
+
         
     def _generate_otp(self, length: int = 6) -> str:
         return random.randint(100000, 999999)

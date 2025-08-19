@@ -2,13 +2,16 @@
 
 import uvicorn
 import os
+import warnings
+warnings.filterwarnings("ignore")
 
 from fastapi import FastAPI
 from app.routers import (client_user_router, main_board_router,board_router , prompt_router ,data_management_table_router, ai_documentation_router,    
-                         rag_router  # Add the new RAG router
+                         rag_router, enhanced_auth_router  # Add the new RAG router
 )
                        
 from fastapi.middleware.cors import CORSMiddleware
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/root/LLM-backend/src/key.json"
 
 app = FastAPI()
 origins = ["*", "http://localhost:3000"]#,"https://prospero-two.vercel.app","http://localhost:3000"]
@@ -28,6 +31,7 @@ app.include_router(prompt_router.router, prefix="/main-boards/boards", tags=["Pr
 app.include_router(data_management_table_router.router, prefix="/main-boards/boards", tags=["Data Management Tables"])
 app.include_router(ai_documentation_router.router, prefix="/main-boards/boards", tags=["AI Documentation"])
 app.include_router(rag_router.router, tags=["RAG"])  # Add the RAG router
+app.include_router(enhanced_auth_router.router, tags=["Enhanced Authentication"])
 
 # app.include_router(time_line_settings_router.router, prefix="/main-boards/boards", tags=["Time Line Settings"])
 

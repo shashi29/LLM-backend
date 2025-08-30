@@ -41,6 +41,7 @@ class ClientUsersRepository(BaseRepository):
                 username VARCHAR(255),
                 password VARCHAR(255),
                 email VARCHAR(255) UNIQUE,
+                email_verified BOOLEAN,
                 client_number VARCHAR(255),
                 customer_number VARCHAR(255),
                 subscription VARCHAR(255),
@@ -69,13 +70,13 @@ class ClientUsersRepository(BaseRepository):
         trial_end_date = datetime.utcnow() + timedelta(days=14)
         
         query = text("""
-            INSERT INTO ClientUsers (name, username, password, email, client_number,
+            INSERT INTO ClientUsers (name, username, password, email, email_verified, client_number,
                                      customer_number, subscription, role, customer_other_details,
                                      created_at, updated_at, phone_number, trial_end_date)
-            VALUES (:name, :username, :password, :email, :client_number, :customer_number,
+            VALUES (:name, :username, :password, :email, :email_verified, :client_number, :customer_number,
                     :subscription, :role, :customer_other_details, CURRENT_TIMESTAMP,
                     CURRENT_TIMESTAMP, :phone_number, :trial_end_date)
-            RETURNING id, name, username, password, email, client_number, customer_number,
+            RETURNING id, name, username, password, email, email_verified, client_number, customer_number,
                       subscription, role, customer_other_details, created_at, updated_at, 
                       phone_number, trial_end_date;
         """)
@@ -85,6 +86,7 @@ class ClientUsersRepository(BaseRepository):
             "username": user.username,
             "password": user.password,
             "email": user.email,
+            "email_verified": user.email_verified,
             "client_number": user.client_number,
             "customer_number": user.customer_number,
             "subscription": user.subscription,
@@ -122,13 +124,13 @@ class ClientUsersRepository(BaseRepository):
         query = text("""
             UPDATE ClientUsers
             SET name = :name, username = :username, password = :password,
-                email = :email, client_number = :client_number,
+                email = :email, email_verified = :email_verified, client_number = :client_number,
                 customer_number = :customer_number, subscription = :subscription,
                 role = :role, customer_other_details = :customer_other_details,
                 updated_at = CURRENT_TIMESTAMP, phone_number = :phone_number,
                 trial_end_date = :trial_end_date
             WHERE id = :user_id
-            RETURNING id, name, username, password, email, client_number, customer_number,
+            RETURNING id, name, username, password, email, email_verified, client_number, customer_number,
                       subscription, role, customer_other_details, created_at, updated_at, 
                       phone_number, trial_end_date;
         """)
@@ -138,6 +140,7 @@ class ClientUsersRepository(BaseRepository):
             "username": user.username,
             "password": user.password,
             "email": user.email,
+            "email_verified": user.email_verified,
             "client_number": user.client_number,
             "customer_number": user.customer_number,
             "subscription": user.subscription,
@@ -155,7 +158,7 @@ class ClientUsersRepository(BaseRepository):
     def delete_user(self, user_id: int) -> Any:
         query = text("""
             DELETE FROM ClientUsers WHERE id = :user_id
-            RETURNING id, name, username, password, email, client_number, customer_number,
+            RETURNING id, name, username, password, email, email_verified, client_number, customer_number,
                       subscription, role, customer_other_details, created_at, updated_at, 
                       phone_number, trial_end_date;
         """)
@@ -257,7 +260,7 @@ class ClientUsersRepository(BaseRepository):
             SET trial_end_date = :new_trial_end,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = :user_id
-            RETURNING id, name, username, password, email, client_number, customer_number,
+            RETURNING id, name, username, password, email, email_verified, client_number, customer_number,
                     subscription, role, customer_other_details, created_at, updated_at, 
                     phone_number, trial_end_date;
         """)

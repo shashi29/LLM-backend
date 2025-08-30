@@ -16,6 +16,7 @@ class ClientUser(BaseModel):
     username: Optional[str] = None
     password: str
     email: str
+    email_verified: Optional[bool] = False  # New field to track email verification status
     client_number: Optional[str] = None
     customer_number: Optional[str] = None
     subscription: Optional[str] = None 

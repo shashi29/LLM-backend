@@ -14,6 +14,7 @@ from app.models.client_user import ClientUser
 from app.repositories.enhanced_auth_repository import EnhancedAuthRepository
 from app.repositories.client_user_repository import ClientUsersRepository, create_access_token
 from app.exceptions import UserNotFoundException, EmailAlreadyInUseException, InternalServerErrorException
+from sqlalchemy import text
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
@@ -306,7 +307,7 @@ async def verify_email(email: str, otp_code: str):
             SET email_verified = TRUE, email_verified_at = CURRENT_TIMESTAMP
             WHERE email = :email;
         """)
-        enhanced_auth_repo.execute_query(query, {"email": email})
+        enhanced_auth_repo.execute_delete_query(query, {"email": email})
         
         # Clean up OTP
         enhanced_auth_repo._delete_otp_by_id(otp_record.id)

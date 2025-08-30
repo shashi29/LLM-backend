@@ -63,50 +63,117 @@ def send_sms_via_msg91(phone_number: str, otp: str) -> bool:
         print(f"❌ SMS Error: {e}")
         raise e
 
-def send_email_via_msg91(receiver_email: str, otp: str) -> bool:
-    """Enhanced Email function from paste.txt"""
+# def send_email_via_msg91(receiver_email: str, otp: str) -> bool:
+#     """Enhanced Email function from paste.txt"""
+#     try:
+#         print(f"Sending OTP {otp} to email {receiver_email} via MSG91")
+        
+#         msg91_auth_key = os.getenv("MSG91_AUTH_KEY")
+#         msg91_template_id = os.getenv("MSG91_EMAIL_TEMPLATE_ID")
+#         msg91_sender_email = os.getenv("MSG91_SENDER_EMAIL", "noreply@wtyy8j.mailer91.com")
+#         msg91_sender_name = os.getenv("MSG91_SENDER_NAME", "GBusiness AI")
+#         msg91_domain = os.getenv("MSG91_DOMAIN", "wtyy8j.mailer91.com")
+        
+#         if not msg91_auth_key or not msg91_template_id:
+#             raise Exception("MSG91 credentials are required for email")
+        
+#         url = "https://control.msg91.com/api/v5/email/send"
+#         headers = {"Content-Type": "application/json", "authkey": msg91_auth_key}
+        
+#         email_data = {
+#             "to": [{"email": receiver_email, "name": "User"}],
+#             "from": {"email": msg91_sender_email, "name": msg91_sender_name},
+#             "domain": msg91_domain,
+#             "template_id": msg91_template_id,
+#             "variables": {
+#                 "otp": str(otp),
+#                 "user_name": "User",
+#                 "company_name": "ONEVEGA Systems Pvt Ltd"
+#             }
+#         }
+        
+#         response = requests.post(url, headers=headers, data=json.dumps(email_data), timeout=30)
+        
+#         if response.status_code == 200:
+#             try:
+#                 response_data = response.json()
+#                 return (response_data.get("type") == "success" or 
+#                        response_data.get("status") == "success" or
+#                        not response_data.get("hasError", True))
+#             except:
+#                 return "success" in response.text.lower()
+#         return False
+        
+#     except Exception as e:
+#         print(f"❌ Email Error: {e}")
+#         raise e
+
+def send_email_via_msg91(email: str, otp: str, purpose: str = "login") -> bool:
+    """Send OTP via MSG91 email template"""
     try:
-        print(f"Sending OTP {otp} to email {receiver_email} via MSG91")
-        
-        msg91_auth_key = os.getenv("MSG91_AUTH_KEY")
-        msg91_template_id = os.getenv("MSG91_EMAIL_TEMPLATE_ID")
-        msg91_sender_email = os.getenv("MSG91_SENDER_EMAIL", "noreply@wtyy8j.mailer91.com")
-        msg91_sender_name = os.getenv("MSG91_SENDER_NAME", "GBusiness AI")
-        msg91_domain = os.getenv("MSG91_DOMAIN", "wtyy8j.mailer91.com")
-        
-        if not msg91_auth_key or not msg91_template_id:
-            raise Exception("MSG91 credentials are required for email")
-        
+        print(f"📧 Sending {purpose} OTP to {email}")
+
+        auth_key = os.getenv("MSG91_AUTH_KEY")
+        template_id = os.getenv("MSG91_EMAIL_TEMPLATE_ID")
+        sender_email = os.getenv("MSG91_SENDER_EMAIL")
+        sender_name = os.getenv("MSG91_SENDER_NAME")
+        domain = os.getenv("MSG91_DOMAIN")
+
+        if not all([auth_key, template_id]):
+            raise Exception("MSG91 credentials not configured")
+
         url = "https://control.msg91.com/api/v5/email/send"
-        headers = {"Content-Type": "application/json", "authkey": msg91_auth_key}
-        
+        headers = {
+            "Content-Type": "application/json",
+            "authkey": auth_key
+        }
+
+        # Email template variables
         email_data = {
-            "to": [{"email": receiver_email, "name": "User"}],
-            "from": {"email": msg91_sender_email, "name": msg91_sender_name},
-            "domain": msg91_domain,
-            "template_id": msg91_template_id,
+            "to": [{"email": email, "name": "User"}],
+            "from": {
+                "email": sender_email,
+                "name": sender_name
+            },
+            "domain": domain,
+            "template_id": template_id,
             "variables": {
                 "otp": str(otp),
                 "user_name": "User",
-                "company_name": "ONEVEGA Systems Pvt Ltd"
+                "company_name": "GBusiness AI",
+                "purpose": purpose.replace("_", " ").title()
             }
         }
-        
+
+        print(f"📤 Sending email via MSG91...")
         response = requests.post(url, headers=headers, data=json.dumps(email_data), timeout=30)
-        
+
+        print(f"📥 Response: {response.status_code} - {response.text}")
+
         if response.status_code == 200:
             try:
                 response_data = response.json()
-                return (response_data.get("type") == "success" or 
-                       response_data.get("status") == "success" or
-                       not response_data.get("hasError", True))
-            except:
-                return "success" in response.text.lower()
-        return False
-        
+                if (response_data.get("type") == "success" or
+                    "success" in str(response_data).lower()):
+                    print(f"✅ Email sent successfully to {email}")
+                    return True
+                else:
+                    print(f"❌ MSG91 Error: {response_data}")
+                    return False
+            except json.JSONDecodeError:
+                if "success" in response.text.lower():
+                    print(f"✅ Email sent successfully to {email}")
+                    return True
+                else:
+                    print(f"❌ Unexpected response: {response.text}")
+                    return False
+        else:
+            print(f"❌ HTTP Error: {response.status_code} - {response.text}")
+            return False
+
     except Exception as e:
-        print(f"❌ Email Error: {e}")
-        raise e
+        print(f"❌ Email sending failed: {e}")
+        return False
 
 class EnhancedAuthRepository(BaseRepository):
     def __init__(self):
@@ -193,7 +260,7 @@ class EnhancedAuthRepository(BaseRepository):
                 success = send_sms_via_msg91(identifier, otp_code)
                 channel = "SMS"
             else:  # EMAIL
-                success = send_email_via_msg91(identifier, otp_code)
+                success = send_email_via_msg91(identifier, otp_code, purpose.value.lower())
                 channel = "Email"
             
             if success:
@@ -356,7 +423,7 @@ class EnhancedAuthRepository(BaseRepository):
     def _increment_otp_attempts(self, otp_id: int) -> None:
         """Increment OTP attempts"""
         query = text("UPDATE OTPs SET attempts = attempts + 1 WHERE id = :otp_id;")
-        self.execute_query(query, {"otp_id": otp_id})
+        self.execute_delete_query(query, {"otp_id": otp_id})
 
     def _mark_otp_verified(self, otp_id: int) -> None:
         """Mark OTP as verified"""
@@ -365,7 +432,7 @@ class EnhancedAuthRepository(BaseRepository):
             SET is_verified = TRUE, verified_at = CURRENT_TIMESTAMP 
             WHERE id = :otp_id;
         """)
-        self.execute_query(query, {"otp_id": otp_id})
+        self.execute_delete_query(query, {"otp_id": otp_id})
 
     def _cleanup_expired_otps(self) -> None:
         """Clean up expired OTPs"""
@@ -383,7 +450,7 @@ class EnhancedAuthRepository(BaseRepository):
         result = self.execute_query(query, {"identifier": identifier})
         
         if result:
-            return ClientUser(**dict(zip(ClientUser.__annotations__, result)))
+            return ClientUser(**result._mapping)#ClientUser(**dict(zip(ClientUser.__annotations__, result)))
         return None
 
     def _get_user_by_id(self, user_id: int) -> Optional[ClientUser]:
@@ -392,7 +459,7 @@ class EnhancedAuthRepository(BaseRepository):
         result = self.execute_query(query, {"user_id": user_id})
         
         if result:
-            return ClientUser(**dict(zip(ClientUser.__annotations__, result)))
+            return ClientUser(**result._mapping)
         return None
 
     def _update_user_password(self, user_id: int, new_password: str) -> bool:
@@ -404,7 +471,7 @@ class EnhancedAuthRepository(BaseRepository):
         """)
         
         try:
-            self.execute_query(query, {"password": new_password, "user_id": user_id})
+            self.execute_delete_query(query, {"password": new_password, "user_id": user_id})
             return True
         except:
             return False

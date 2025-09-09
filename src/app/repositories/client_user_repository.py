@@ -97,7 +97,7 @@ class ClientUsersRepository(BaseRepository):
         }
 
         user_data_tuple = self.execute_query(query, values)
-        user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
+        user_instance = ClientUser(**user_data_tuple._mapping)
         return user_instance
 
     def get_users(self) -> Any:
@@ -106,7 +106,7 @@ class ClientUsersRepository(BaseRepository):
         """)
 
         user_data_list = self.execute_query_all(query)
-        user_dict = [ClientUser(**dict(zip(ClientUser.__annotations__, user_data))) for user_data in user_data_list]
+        user_dict = [ClientUser(**user_data._mapping) for user_data in user_data_list]
         return user_dict
 
     def get_user(self, user_id: int) -> Any:
@@ -117,7 +117,7 @@ class ClientUsersRepository(BaseRepository):
         values = {"user_id": user_id}
 
         user_data_tuple = self.execute_query(query, values)
-        user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
+        user_instance = ClientUser(**user_data_tuple._mapping)
         return user_instance
 
     def update_user(self, user_id: int, user: ClientUser) -> Any:
@@ -152,7 +152,7 @@ class ClientUsersRepository(BaseRepository):
         }
 
         user_data_tuple = self.execute_query(query, values)
-        user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
+        user_instance = ClientUser(**user_data_tuple._mapping)
         return user_instance
 
     def delete_user(self, user_id: int) -> Any:
@@ -166,7 +166,7 @@ class ClientUsersRepository(BaseRepository):
         values = {"user_id": user_id}
 
         user_data_tuple = self.execute_query(query, values)
-        user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
+        user_instance = ClientUser(**user_data_tuple._mapping)
         return user_instance
 
     def login_user(self, user_data) -> Any:
@@ -177,7 +177,7 @@ class ClientUsersRepository(BaseRepository):
         user_data_tuple = self.execute_query(query, values)
         if not user_data_tuple:
             return None
-        user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
+        user_instance = ClientUser(**user_data_tuple._mapping)
         return user_instance
 
     def store_otp(self, phone_number: str, otp: str):
@@ -210,7 +210,7 @@ class ClientUsersRepository(BaseRepository):
         values = {"phone_number": phone_number}
         user_data_tuple = self.execute_query(query, values)
         if user_data_tuple:
-            user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
+            user_instance = ClientUser(**user_data_tuple._mapping)
             return user_instance
         return None
     
@@ -272,6 +272,6 @@ class ClientUsersRepository(BaseRepository):
 
         user_data_tuple = self.execute_query(update_query, values)
         if user_data_tuple:
-            user_instance = ClientUser(**dict(zip(ClientUser.__annotations__, user_data_tuple)))
+            user_instance = ClientUser(**user_data_tuple._mapping)
             return user_instance
         return None
